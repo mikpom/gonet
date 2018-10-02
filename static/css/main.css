@@ -1,0 +1,98 @@
+#remove-nodes-btns .rm-nodes-btn {
+    width: 50%;
+    font-size: 0.7rem;
+}
+
+#job-warnings {
+    max-width: 700px;
+}
+
+.layout-btn {
+    width: 33.3%;
+}
+
+#input-example {
+    background-color: #eee;
+    font-size: 0.8em;
+}
+
+#cy {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 999;
+    background-color:#ffffff;
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 100vh;
+    right: 350px;
+}
+
+.header {
+    background : #b8daff;
+}
+
+.dropdown-item {
+    cursor: pointer
+}
+
+#side_panel_div{
+    position:absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    width: 370px;
+    padding: 20px;
+    padding-right: -19px;
+    background-color: #FFFFFF;
+    color: black;
+}
+
+.hamburger_row{
+    width: 25px;
+    height: 3px;
+    background-color: #cccccc;
+    margin: 3px 0;    
+}
+
+#hamburger{
+    position: absolute;
+    padding: 10px;
+    right: 0;
+    cursor: pointer;
+    z-index: 10000;
+
+}
+
+#cy.side-collapsed{
+    right: 0;    
+}
+
+.rowname {
+    width: 150px;
+    overflow: hidden;
+}
+
+table.nodeinfo {
+    table-layout:fixed;
+}
+
+#custom_terms_row {
+    line-height:40px;
+}
+
+#annot_param textarea {
+    max-height:10px;
+}
+
+/* #paste_left { */
+/*     overflow:hidden; */
+/* } */
+
+.custom-terms-expand {
+    max-height:10px;
+    overflow:hidden;
+}

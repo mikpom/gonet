@@ -1,0 +1,31 @@
+{% extends "gonet/base.html" %}
+{% load static %}
+
+{% block title %}GOnet help{% endblock %}
+{% block page_header %}
+    <div class="row align-items-center">
+        <div class="col-2">
+            <a href="{% url 'GOnet-submit-form' %}">
+                <img src="{% static 'figs/GOnet_logo.png' %}" class="img-fluid m-2">
+            </a>
+        </div>
+        <div class="col-6">
+            <h2>GOnet help</h2>
+        </div>
+    </div>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        {% block doc_content %}{% endblock %}
+        <footer class="pt-4 my-md-5 pt-md-5 border-top">
+            <p>
+                <span class="mx-4">
+                    <a href="{% url 'doc-part' 'index' %}">Index</a>
+                </span>
+                <span class="mx-4">
+                    <a href="{% url 'doc-part' 'contact' %}">Contact</a>
+                </span>
+            </p>
+        </footer>
+    </div>
+{% endblock %}

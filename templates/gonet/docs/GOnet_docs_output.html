@@ -1,0 +1,92 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+{% load static %}
+
+{% block doc_content %}
+    <h2 id="output-help">Output</h2>
+    <p>Here is an example GOnet output graph</p>
+    <img src="{% static "figs/GOnet_example.jpg" %}" height="700px">
+    <p>There are two apparently distinguishable types of nodes: GO terms and genes. Accordingly, there are two types of edges: connecting two GO terms and connecting a GO term and a gene. When edge connects two GO terms the arrow is directed from the less specific term to the more specific term. When edge connects GO term and a gene it is always directed towards the gene. GO term nodes are colored by p-value of enrichment (in case of GO enrichment analysis): the more significant enrichment of the term (the smaller p-value) the more intense the color of the node. Genes are colored (in this particular example) by expression in CD4 naive T cells. It is important to note that genes are always connected to the most specific term possible though ontologies can be always propagated to less specific terms. For example, HIST1H1E is connected to "Nucleosome assembly" though of course it is involved in "Chromatin assembly" and "Chromatin assembly and disassembly" too.</p>
+    <h2>Graph control (side panel)</h2>
+    <h4>Layouts</h4>
+    <img src="{% static "figs/side_panel_layouts.png" %}" height="150px" class="my-1">
+    <p>
+        Currently three types of layouts are supported:
+        <ol>
+            <li><span class="font-weight-bold">Cose (Compound Spring Embedder) layout.</span> This layout imitates node repulsion. It is convenient for small networks containing not many genes (100 or less). This layout is depicted in example above.</li>
+            <li><span class="font-weight-bold">Hierarchical layout.</span> This layout displays nodes in their hierarchy. Less specific GO terms are placed at the top of the network while more specific GO terms are placed at the bottom. Genes (if visualized) are positioned at the very bottom level of the graph. This layout is especially useful for big networks containing a lot of GO terms.</li>
+            <li><span class="font-weight-bold">Euler layout.</span> Another force-directed (physics simulation) layout similar to Cose layout which runs faster so is more suitable for large networks.</li>
+            
+        </ol>
+    </p>
+    <h4>Simplifying the graph</h4>
+    <p>When the network becomes too heavy due to plenty of genes or GO terms, features "Remove parent terms" and "Remove genes" can be handy. The first one toggles the visibility of GO terms not connected to any genes, e.g. "Chromatin assembly" in example network. The second one obviously toggles visibility of the genes allowing for exploration of GO terms only.</p>
+    <h2>Accessing node data</h2>
+    <p>Clicking on the nodes or edges shows table with information about the object clicked.</p>
+    <h4>Genes</h4>
+    <p>In case of gene being clicked the data table looks like this </p>
+    <div class="w-25">
+        <table class="table table-sm table-bordered table-hover">
+            <tbody><tr>
+                <td>Gene name</td>
+                <td id="infoGeneName">NOG</td>
+            </tr>
+            <tr>
+                <td>UniprotID</td>
+                <td>
+                    <a id="uniprotLink" href="http://www.uniprot.org/uniprot/Q13253">Q13253</a>
+                </td>
+            </tr>
+            <tr>
+                <td>EnsemblID</td>
+                <td>
+                    <a id="ensemblLink" href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000183691">ENSG00000183691</a>
+                </td>
+            </tr>
+            <tr>
+                <td>DICE-DB</td>
+                <td>
+                    <a id="DICELink" href="http://dice-database.org/genes/NOG">NOG</a>
+                </td>
+            </tr>
+            <tr>
+                <td>Genecards</td>
+                <td>
+                    <a id="genecardsLink" href="http://www.genecards.org/cgi-bin/carddisp.pl?gene=NOG">NOG</a>
+                </td>
+            </tr>                    
+            <tr>
+                <td>Expression (TPM) in <span id="celltypeTable">[user_supplied]</span></td><td id="infoGeneExpr">-0.73</td>
+            </tr>
+            </tbody></table>
+    </div>
+    <p>In the table you can access corresponding references to external pages for the entry as well as expression data</p>
+    <h4>GO terms</h4>
+    <p>By clicking on the GO term its description, p-value and corresponding genes can be viewed like this</p>
+    <div class="w-25">
+        <table class="sidepanel restable table table-sm table-bordered table-hover">
+
+            <tbody><tr>
+                <td>GO term ID</td><td id="infoTermID"><a href="http://amigo.geneontology.org/amigo/term/GO:0031497">GO:0031497</a></td>
+            </tr>
+            <tr>
+                <td>Definition</td><td id="infoTermDefinition">chromatin assembly</td>
+            </tr>
+            
+            <tr>
+                <td>p-value</td><td id="infoTermPval">8.9e-6</td>
+            </tr>
+            <tr>
+                <td>p-value (FDR adjusted)</td><td id="infoTermPvalAdj">1.6e-2</td>
+            </tr>
+
+            <tr>
+                <td>Genes annotated with</td><td id="infoTermXgenes"><a href="#" class="badge badge-primary genePill" id="gP10412">HIST1H1E</a> <a href="#" class="badge badge-primary genePill" id="gP16401">HIST1H1B</a> <a href="#" class="badge badge-primary genePill" id="gP16402">HIST1H1D</a> <a href="#" class="badge badge-primary genePill" id="gP16403">HIST1H1C</a> <a href="#" class="badge badge-primary genePill" id="gP62807">HIST1H2BC</a> <a href="#" class="badge badge-primary genePill" id="gQ6DN03">HIST2H2BC</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>Note that gene badges are clickable and show corresponding gene information. This is useful for exploration of large networks with a lot of GO terms when genes are removed from the graph.</p>
+    <h4>Edges</h4>
+    <p>Clicking an edge connecting gene and GO term shows the most specific descendants of the term annotating the gene.</p>
+
+{% endblock %}

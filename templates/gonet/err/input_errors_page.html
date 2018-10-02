@@ -1,0 +1,21 @@
+{% extends "gonet/base.html" %}
+
+{% block page_header %}
+    <div class="py-4">
+        <h2>Errors encountered while parsing the data</h2>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid my-4">
+        <p class="my-3">{{ error }}</p>
+        <div class="w-25 px-4" id="input-example">
+            {% if invalid_entries %}
+                {% for entry in invalid_entries %}
+                    <p class="my-0">{{ entry }}</p> 
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

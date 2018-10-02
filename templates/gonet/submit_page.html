@@ -1,0 +1,122 @@
+{% extends "gonet/base.html" %}
+{% load static %}
+
+{% block title %} GOnet {% endblock %}
+{% block page_header %}
+    <div class="row align-items-center">
+        <div class="col-2">
+            <a href="{% url 'GOnet-submit-form' %}">
+                <img src="{% static 'figs/GOnet_logo.png' %}" class="img-fluid m-2">
+            </a>
+        </div>
+        <div class="col-6">
+            <h2>Build Gene Ontology network for a list of genes</h2>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+    <div class="container submitform">
+        <form id="input-form" name="formular" action="{% url 'GOnet-submit-form' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table class="table  table-sm table-condensed table-bordered my-4">
+                <tr class="table-primary">
+                    <th class="par_grp_sep"><div class="d-inline"><h2>Input parameters</h2></div></th>
+                    <td><button type="button" id="samp_data_button">Insert example</button></td>
+                </tr>
+                <tr>
+                    <td>Species</td>
+                    <td id="organism">
+                        {% for radio in form.organism %}
+                            <label for="{{ radio.id_for_label }}">
+                                {{ radio.choice_label }}
+                                <span class="radio">{{ radio.tag }}</span>
+                            </label>
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Upload a CSV file</td>
+                    <td>{{ form.uploaded_file }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>Or paste data here</p>
+                        <p><a href="{% url 'doc-part' 'input' %}">Input format</a></p>
+                    </td>
+                    <td>{{ form.paste_data }}</td></tr>
+                <tr><td>Separator (if FC sign is supplied)</td><td>{{ form.csv_separator }}</td></tr>
+                <tr>
+                    <td>Job name (optional)</td>
+                    <td>{{ form.job_name }}</td>
+                </tr>
+                <tr class="table-primary"><th colspan="2" class="par_grp_sep">Job parameters</th></tr>
+                <tr>
+                    <td>GO namespace</td><td>{{ form.namespace }}</td>
+                </tr>
+                <tr>
+                    <td>Select analysis type </td><td>
+                        <div id="analysis_type" class="form-check form-check-inline">
+                            {% for radio in form.analysis_type %}
+                                <label class="form-check-label mx-1" for="{{ radio.id_for_label }}">
+                                    <span class="radio">{{ radio.tag }}</span>
+                                    {{ radio.choice_label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <a class="mx-3" href="{% url 'doc-part' 'analysis_types' %}">?</a>
+                    </td>
+                </tr>
+            </table>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col" id="enrich_param">
+                        <div class="text-primary">Enrichment analysis options</div>
+                        <table class="table  table-sm table-condensed table-bordered">
+                            <tr><td>q-value threshold</td><td>{{ form.qvalue }}</td></tr>
+                            <tr><td>Background<a class="mx-3" href="{% url 'doc-part' 'enrich_bg' %}">?</a></td><td>{{ form.bg_type }}</td></tr>
+                            <tr id="predef_bg_row"><td>All genes expressed in</td><td>{{ form.bg_cell }}</td></tr>
+                            <tr id="custom_bg_row"><td>List of background genes</td><td>{{ form.bg_file }}</td></tr>
+
+                        </table>        
+                    </div>
+                    <div class="col" id="annot_param">
+                        <div class="text-primary">Annotation analysis options</div>
+                        <table class="table  table-sm table-condensed table-bordered">
+                            <tr><td>GO subset</td><td>{{ form.slim }}</td></tr>
+                            <tr id="custom_terms_row" style="">
+                                <td>
+                                    <div id="paste_left" class="my-0 custom-terms-expand"><p class="my-0">Paste custom GO terms</p> <p class="my-0">(one per line in the form GO:XXXXXX)</p></div>
+                                </td>
+                                <td>{{ form.custom_terms }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <table class="table  table-sm table-condensed table-bordered my-4">
+                <tr class="table-primary"><th colspan="2" class="par_grp_sep">Output parameters</th></tr>
+                <tr id="output_type"><td>Select output type</td><td>{{ form.output_type }}</td></tr>
+                <tr>
+                    <td>
+                        <button class="btn btn-outline-primary" type="submit" name="submit">Submit</button>
+                        
+                    </td>
+                    <td>
+                        <span>
+                            <a class="mtop-3" href="{% url 'doc-part' 'index' %}">Help</a>
+                        </span>
+                        <span class="mx-4">
+                            <a href="{% url 'doc-part' 'contact' %}">Contact</a>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+
+        </form>
+    </div>
+    <script src="{% static "JavaScript/bundles/GOnet_submit_page.bundle.js" %}" type="text/javascript"></script>
+{% endblock %}
+
+
+

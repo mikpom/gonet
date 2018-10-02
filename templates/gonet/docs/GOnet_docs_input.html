@@ -1,0 +1,26 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+{% block doc_content %}
+    <h2 id="input-help">Input</h2>
+    <p>Input genes can be uploaded (or pasted in the relevant submit form section) in the following format</p>
+    <div class="w-25 px-4 my-2" id="input-example">
+        <p class="my-0">ABCB1</p>
+        <p class="my-0">AK5</p>
+        <p class="my-0">AMZ2P1</p>
+        <p class="my-0">APOBR</p>
+        <p class="my-0">BHLHE40</p>
+        <p class="my-0">CCDC75</p>
+        <p class="my-0">CCL20</p>
+        <p class="my-0">...</p>
+    </div>
+    <h4>Constrast values</h4>
+    <p>In addition to the genes you can provide <b>optional</b> value which will be used to colorize the nodes. Common use case is to use logarithm of fold change (log2FC) between two conditions. A separator designated in submission form should be used to separate gene names and contrast values. For example, if  <code>{tab}</code> as a separator. </p>
+    <div class="w-25 px-4 my-2" id="input-example">
+        <p class="my-0">ABCB1	0.6</p>
+        <p class="my-0">AK5	-0.54</p>
+        <p class="my-0">...</p>
+    </div>
+    <p>If expression values are not provided you can also choose to color genes by expression in particular <a href="{% url 'doc-part' 'node_colors' %}">cell type</a>.</p>
+    <h4>Accepted IDs</h4>
+    <p>The app can process common gene symbols/names (ABCB1, CCR7, Klf4, etc), Uniprot IDs (e.g. P32248) or MGI IDs (e.g. MGI:1342287, mouse only). Uniprot IDs and MGI IDs are considered <span class="font-weight-bold">primary</span> and recommended type of ID for human and mouse data respectively. If gene symbols are provided they will be converted to primary ID first. For human gene symbols conversion to UniProt IDs ID mapping data available from <a href="ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/">UniProt FTP site</a> is used. For conversion of mouse gene symbols to MGI IDs mapping available <a href="http://www.informatics.jax.org/downloads/reports/MRK_List2.rpt">here</a> is used. The application tries to map every input entry to a single ID at every step. Since ID mappings are usually not 1-to-1 application will try to pick the most relevant and reliable ID. In case of several Uniprot IDs those belonging to Swiss-Prot subset will be preferred. If several Swiss-Prot IDs identified then those with the most GO annotations are prioritized. In case of several Ensembl IDs those located on regular chromosome are prioritized over those located on assembly patches and alternative loci. In case of ID conversion failure for some entries those will still be visible in the graph but corresponding GO and/or expression information will be missing.</p>
+    <p>Using Uniprot IDs for human data and MGI IDs for mouse data is recommended. Resulting ID recognition/conversion can be downloaded from the output page by selecting <code>Export > ID mapping</code>.</p>
+{% endblock %}

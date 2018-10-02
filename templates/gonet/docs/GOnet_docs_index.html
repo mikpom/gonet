@@ -1,0 +1,23 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+{% load static %}
+
+{% block doc_content %}
+    <h3>Gene Ontology primer</h3>
+    <p>Gene ontology (<a href="http://geneontology.org/">geneontology.org</a>) is a controlled vocabulary of terms used for annotation of genes. Terms are connected into hierarchy showing their relationships. For GO enrichment analysis in particular the most important term relationships are <i>is_a</i> and <i>part_of</i>. You may consider terms connected with this type of relationship as being 'successor/predecessor' of one another. Here is a small snapshot of ontology tree.</p>
+    <img src="{% static "figs/ontology_example2.png" %}" width="1000px">
+    <p>Here GO term "immune response" (GO:0006955) has 13 child GO terms: "cell activation involved in immune response" (GO:0002263), "inflammatory response to antigenic stimulus" (GO:0002437) etc. Important to note that this hierarchy implies the possibility to propagate annotation for a specific gene up the tree to the root ("immune system process" in this case). This means that a gene involved in e.g. "innate immune response" is also annotated by all of its ancestors i.e. "immune response" and "immune system process".</p>
+    <h3>GOnet analysis</h3>
+    <p>The application is capable of constructing an interactive graph containing GO terms and genes. The graph will simultaneously convey hierarchical structure of the GO terms and connect GO terms to genes according to available annotations.</p>
+    <h4>GOnet documentation entries</h4>
+    <ul>
+        <li><a href="{% url "doc-part" "input" %}">Input</a></li>
+        <li><a href="{% url "doc-part" "analysis_types" %}">GO term Enrichment vs Annotation analysis</a></li>
+        <ul>
+            <li><a href="{% url "doc-part" "enrich_bg"%}">Background for GO Enrichment analysis</a></li>
+        </ul>
+        <li><a href="{% url "doc-part" "output" %}">Output</a></li>
+        <li><a href="{% url "doc-part" "export" %}">Data export</a></li>
+        <li><a href="{% url "doc-part" "node_colors" %}">Coloring the nodes</a></li>
+    </ul>
+
+{% endblock %}

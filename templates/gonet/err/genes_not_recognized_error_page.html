@@ -1,0 +1,18 @@
+{% extends "gonet/base.html" %}
+
+{% block page_header %}
+    <div class="py-4">
+        <h2>Errors encountered while parsing the data</h2>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid my-4">
+        <p class="my-3">None of the genes submitted (listed below) was identified in the database. Probably check if the separator specified is ok and if right organism (human or mouse) is indicated.</p>
+        <div class="w-25 px-4" id="input-example">
+            {% for gene in genes %}
+                <p class="my-0">{{ gene }}</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,7 @@
+celery==4.2.1
+Django==2.1
+networkx==2.1
+numpy==1.15.0
+pandas==0.23.4
+ipython==6.5.0
+line-profiler==2.1.2

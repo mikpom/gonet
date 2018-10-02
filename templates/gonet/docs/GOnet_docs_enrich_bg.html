@@ -1,0 +1,21 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+{% load static %}
+
+{% block doc_content %}
+    <h3>Background genes for enrichment analysis</h3>
+    <p>When computing GO categories enrichment it makes sense to narrow down the list of genes the signature is analyzed against (see computation footnote to see how background is used). GOnet allows to use three types of background option:</p>
+    <ul>
+        <li><span class="font-weight-bold">All GO annotated genes.</span> All genes annotated with GO terms will be used as a background. This option can be used as a simple default but the results can be not specific enough.</li>
+        <li><span class="font-weight-bold">Custom gene list.</span> Submit a plain text file containing background genes to use. Genes should be one per line; same ID types as for the submitted signature input list are accepted.</li>
+        <li><span class="font-weight-bold">Predefined backgrounds.</span> One of the appproaches to define a background is to use genes significantly expressed in the cell type which gene signature originates from. GOnet attempts to implement this step for the user by allowing to select one of the predefined backgrounds. In this case additional selection option will allow to choose a cell type/tissue to restrict background to. For example, if option <div class="text-nowrap badge badge-light">(DICE-DB) TH1</div> is selected then all the genes with expression higher than 1 TPM in Th1 cells will be used as a backgrond. If option <div class="text-nowrap badge badge-light">Any DICE-DB celltype</div> is selected then background will consist of genes with expression higher than 1 TPM in at least one of cell types presented in <a href="http://dice-database.org/">DICE-DB</a> (which are major blood cell types).</li>
+    </ul>
+    <h3>Computing GO enrichment p-values</h3>
+    <p>Computation of enrichment p-values follows the procedure in Python <a href="https://github.com/jdrudolph/goenrich">goenrich</a> package. For every GO term considered, the p-value in Fisher exact test is computed. For every term null hypothesis states that the number of genes in the input list annotated with the GO term is not overrepresented compared to the background. The contingency table considered is:</p>
+    <table class="table table-sm table-bordered table-hover nodeinfo">
+        <tr><td></td><td>Entries in background and in input list</td><td>Entries in background but not in input list</td><td>Total</td></tr>
+        <tr><td>Annotated with GO term</td><td>x</td><td>n-x</td><td>n</td></tr>
+        <tr><td>Not annotated with GO term</td><td>N-x</td><td>M-N-(n-x)</td><td>M-n</td></tr>
+        <tr><td>Total</td><td>N</td><td>M-N</td>
+    </table>
+    <p>A p-value is computed as a survival function of hypergeometric distribution with shape parameters (M, n, N) at point x.</p>
+{% endblock %}

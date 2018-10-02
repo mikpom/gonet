@@ -1,0 +1,26 @@
+<html>
+  {% load static %}
+<head>
+	<title>Data tools</title>	
+	<!-- css -->
+	<!-- <link rel="stylesheet" href="/css/base.css"> -->
+</head>
+  <body>
+    <table border="1">
+      <tr>
+        <td><a href="{% url 'GOnet-submit-form' %}"><h2>GOnet: analyze GO gene annotations as an interactive network</h2></a></td>
+        <td><img src='{% static "figs/GOnet_preview.png" %}' alt='GOnet_preview'></td>
+      </tr>
+
+      <tr>
+        <td><a href="{% url 'allcmp-submit-form' %}"><h2>Make all-against-all statistical comparisons</h2></a></td>
+        <td><img src='{% static "figs/allcmp_preview.png" %}' alt='allcmp_preview'></td>
+      </tr>
+     <tr>
+       <td>    <a href="{% url 'heatmap-submit-form' %}"><h2>Cluster data and plot heatmap</h2></a></td>
+       <td><img src='{% static "figs/heatmap_preview.png" %}' alt='heatmap_preview'></td>
+     </tr>
+    </table>
+  </body>
+
+</html>

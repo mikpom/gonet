@@ -1,0 +1,11 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+
+{% block doc_content %}
+    <h2 id="analysis-type-help">GO term Enrichment vs Annotation analysis</h2>
+    <p>GOnet supports two types of analysis available under <code>Analysis type</code> field in the submission form. They differ in which subset of Gene Ontology the query should be analyzed against.</p>
+    <ol>
+        <li>GO terms statistically significantly over-represented in the gene list submitted.</li>
+        <li>A predefined subset (also known as “<a href="http://geneontology.org/page/go-slim-and-subset-guide">GO slim</a>"), or a user-supplied list of terms.</li>
+    </ol>
+    <p>In the first case the analysis will be termed to as an <b>“enrichment”</b> analysis, in the second as an <b>“annotation”</b> analysis. The first one (default) runs standard GO enrichment analysis and shows relation of the submitted genes only to over-represented GO terms.  In the second case GOnet will reconstruct relationship of the input genes to GO terms specified in <code>GO subset</code> parameter. For example, “GO slim generic” can be selected. This is a subset of Gene Ontology maintained by GOC which includes categories suitable for majority of studies. Alternatively one can select <code>custom</code> option and specify GO terms in appearing text field.</p>
+{% endblock %}

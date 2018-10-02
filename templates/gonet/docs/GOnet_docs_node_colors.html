@@ -1,0 +1,25 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+
+{% block doc_content %}
+    <h2 id="color-genes-help">Colorize genes by expression</h2>
+    <p>
+        It is possible to color gene nodes by expression in various cell types/tissues by choosing different options in the corresponding drop-down menu. Currently following datasets are supported:
+        <ul>
+            <li> <p>Human:</p>
+                <ol>
+                    <li><span class="font-weight-bold">DICE-DB dataset.</span> Dataset covers major blood cell types and can be also accessed at <a href="http://dice-database.org/">DICE database</a>. Selected with <div class="text-nowrap badge badge-light">(DICE-DB)[<i>celltype</i>]</div> entries in the drop-down menu.</li>
+                    <li><span class="font-weight-bold">Human Protein Atlas dataset.</span> Dataset is available at <a href="https://www.proteinatlas.org/">www.proteinatlas.org</a> [1] and covers major human tissues. This data can be accessed with <div class="text-nowrap badge badge-light">(HPA)[celltype]</div> entries in the drop-down menu.</li>
+                </ol>
+            </li>
+            <li><p>Mouse:</p>
+                <ol>
+                    <li><span class="font-weight-bold">Bgee DB</span> [2] mouse dataset for <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE36026">RNA-seq from ENCODE/LICR</a>. Can be downloaded <a href="ftp://ftp.bgee.org/current/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_GSE36026.tsv.zip">here</a>.</li>
+                </ol>
+            </li>
+        </ul>
+    </p>
+    <p><span class="font-weight-bold">Note:</span> some of the genes in the network can be with white background. It can happen due to several reasons. One of them is that the app could not identify your gene. In this case you can always substitute a name of a gene for its Uniprot ID if you know one. Or for some of those the name could not be successfully coerced to Ensembl ID which is required for inferring the expression. You can have a look at how the resolution succeeded for you input list in <code>Export > ID Mapping</code> (see also <a href="{% url 'doc-part' 'input' %}">Input</a>)</p>
+    <h2>References</h2>
+    <p>[1] Uhlén M et al, 2015. Tissue-based map of the human proteome. Science. PubMed: 25613900 DOI: 10.1126/science.1260419</p>
+    <p>[2] Bastian, F. et al. Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species. in Data Integration in the Life Sciences 124–131 (Springer Berlin Heidelberg). doi:10.1007/978-3-540-69828-9_12</p>
+{% endblock %}

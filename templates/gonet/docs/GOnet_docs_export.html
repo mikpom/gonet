@@ -1,0 +1,20 @@
+{% extends "gonet/docs/GOnet_docs_base.html" %}
+{% block doc_content %}
+    <h2 id="export-help">Exporting the data</h2>
+    There are several options to export the result for downstream application.
+    <ul>
+        <li>Text outputs
+            <ul>
+                <li><span class="font-weight-bold">Data as csv.</span> This is the main output format containing the terms, their p-values of enrichment and corresponding genes.</li>
+                <li><span class="font-weight-bold">Data as txt.</span> This format attempts to retain hierarchy of the enriched terms and supposed to be viewed in any text editor.</li>
+                <li><span class="font-weight-bold">ID mapping.</span> File containing information how submitted entries were recongnized and converted to other types of IDs (see <a href="{% url 'doc-part' 'input' %}">Input</a> for more).</li>
+            </ul>
+        </li>
+        <li>Images
+            <ul><li>The images of the visible network area can be exported in PNG or JPG formats.</li></ul>
+        </li>
+        <li>JSON
+            <ul><li>This outputs the network in .cyjs format which can be viewed within desktop Cytoscape application.</li></ul>
+        </li>
+    </ul>
+{% endblock %}

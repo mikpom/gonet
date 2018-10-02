@@ -1,0 +1,11 @@
+genelist1 - signature differentiating CD4 bulk memory transciptomes of senior and young individuals
+genelist2 - signature differentiating CD4 bulk memory transciptomes of LTBI vs healthy  individuals
+genelist3 - signature differentiating MAITs from CD8 cells
+genelist4 - sample list with whitespace as delimiter
+genelist5 - random 100 genes
+genelist6 - DEGs eneriched in Monocyte genes
+genelist7 - sample mouse gene list
+genelist8 - large gene list with almost all known genes
+genelist9- ID resolution for genelist7
+custom_annoation - result of dfs_tree on ontol.O and two terms: GO:0071300 (cellular response to retinoic acid) and GO:0065003 (macromolecular complex assembly)
+

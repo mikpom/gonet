@@ -1,0 +1,252 @@
+{% extends "gonet/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if job_name %}
+        GOnet - {{ job_name }}
+    {% else %}
+        GOnet {{analysis_type}} results
+    {% endif %}
+{% endblock %}
+
+{% block head_block %}
+    <script>var jobid = "{{jobid}}"</script>
+    <script>var netURL  = "{{net_json_url}}"</script>
+    <script>var analysisType = "{{analysis_type}}"</script>
+    <script>var organism = "{{organism}}"</script>
+    <script>var exprURL = "{{expr_url_base}}"</script>
+    <script>var genePillTemplate = '<a href="#" class="badge badge-primary genePill" id="gGENEID">GENESYMBOL</a>'</script>
+    <script>var goTermRefTemplate = '<a target="_blank" rel="noopener noreferrer" href="http://amigo.geneontology.org/amigo/term/%TERMID/">%LINKTEXT</a>'</script>
+    <link href="{% static "css/cytoscape-context-menus.css" %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "JavaScript/bundles/GOnet_result_page.bundle.js" %}" type="text/javascript"></script>
+    <style>
+     div.header {display:none}
+    </style>
+{% endblock %}
+{% block content %}
+    <span id="hamburger">
+        <div class="hamburger_row"></div>
+        <div class="hamburger_row"></div>
+        <div class="hamburger_row"></div>
+    </span>
+    <div class="content_container">
+        <div id="cy">
+            
+        </div>
+        <div id="side_panel_div">
+            <a href="{% url 'doc-part' 'output' %}" target="_blank" rel="noopener noreferrer">Help</a>
+            <div id="colorbar"></div>
+            <div id="net-view-control" class="card">
+                <div class="card-body p-0"> 
+                    <h5 id="chooseLyt" class="card-title">Choose layout</h5>
+                    <form class="btn-group btn-group-toggle d-block" data-toggle="buttons" id="layout-selection" title="Compound Spring Embedder layout (Imitates node repulsion)" data-placement="top" data-toggle="tooltip">
+                        <label class="btn btn-outline-primary layout-btn active" id="coseLayout">
+                            <input type="radio" name="options" id="option1" autocomplete="off" checked> Cose
+                        </label
+                        ><label class="btn btn-outline-primary layout-btn" id="hierarchicalLayout" title="Hierarchical layout" data-placement="top" data-toggle="tooltip">
+                            <input type="radio" name="options" id="option2" autocomplete="off"> Hierar
+                        </label
+                        ><label class="btn btn-outline-primary layout-btn" id="eulerLayout" title="Euler layout" data-placement="top" data-toggle="tooltip">
+                            <input type="radio" name="options" id="option3" autocomplete="off"> Euler
+                        </label>
+                    </form>
+                    <button class ="btn btn-outline-primary my-1 p-0 btn-block" id="fit_window">Fit to window</button>
+                </div> 
+            </div>
+            <div class="btn-group btn-block" role="group" aria-label="Basic example" id="remove-nodes-btns">
+                <button type="button" class="btn btn-outline-primary rm-nodes-btn" id="rm_parent_nodes">Remove parent terms</button>
+                <button type="button" class="btn btn-outline-primary rm-nodes-btn" id="rm_gene_nodes">Remove genes</button>
+            </div>
+            <button id="renderNetCy" type="button" class="btn btn-secondary mx-auto my-auto" style="display:none;">Show network</button>
+            <div class="btn-group my-2">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Export data
+                </button>
+                <a target="_blank" rel="noopener noreferrer" class="mx-3" href="{% url 'doc-part' 'export' %}">?</a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{% url 'GOnet-csv-res' jobid %}">Data as CSV</a>
+                    <a class="dropdown-item" href="{% url 'GOnet-txt-res' jobid %}">Data as TXT</a>
+                    <a class="dropdown-item" href="{% url 'GOnet-input-idmap' jobid %}">ID mapping</a>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" id="export-png">View as png</div>
+                    <div class="dropdown-item" id="export-png-hidef">View as png (high def)</div>
+                    <div class="dropdown-item" id="export-jpg">View as jpg</div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item exportCYJS">Network as JSON</div>
+                </div>
+            </div>
+            {% if analysis_type == "enrich" %}
+                <div class="card my-2">
+                    <div class="card-body p-0"> 
+                        <h5 class="card-title">p-value threshold</h5> 
+                        <select id="pval_threshold" class="form-control">
+                        </select>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="card my-2">
+                <div class="card-body p-0"> 
+                    <h5 class="card-title">Color genes by expression<a target="_blank" rel="noopener noreferrer" class="mx-1" href="{% url 'doc-part' 'node_colors' %}#color-genes-help">?</a></h5> 
+                    <select id="celltype" class="form-control">
+                        <option value="default">Default</option>
+                        <option value="user_supplied">User supplied</option>
+                        {% for val, option in expr_celltypes %}
+                            <option value="{{val}}">{{option}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="terminfo" class="my-2" style="display:none;">
+                <table class="table table-sm table-bordered table-hover nodeinfo">
+
+                    <tr>
+                        <td class="rowname">GO term ID</td><td id="infoTermID"></td>
+                    </tr>
+                    <tr>
+                        <td class="rowname">Definition</td><td id="infoTermDefinition"></td>
+                    </tr>
+                    {% if analysis_type == "enrich" %}
+                        <tr>
+                            <td class="rowname">p-value</td><td id="infoTermPval"></td>
+                        </tr>
+                        <tr>
+                            <td class="rowname">p-value (FDR adjusted)</td><td id="infoTermPvalAdj"></td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <td colspan="2" class="p-6">Genes: <span id="infoTermXgenes"></span></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="geneinfo" class="my-2" style="display:none;">
+                <table class="table table-sm table-bordered table-hover nodeinfo">
+                    <tr>
+                        <td class="rowname">Gene name</td>
+                        <td id="infoGeneName"></td>
+                    </tr>
+                    <tr>
+                        <td class="rowname">Description</td>
+                        <td id="infoDef"></td>
+                    </tr>
+                    <tr>
+                        <td class="rowname">Uniprot<img id="uniprot-ico" src="" width="30px" class="mx-2"></td>
+                        <td>
+                            <a target="_blank" rel="noopener noreferrer" id="uniprotLink" href=""></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="rowname">Ensembl<img id="ensembl-ico" src="" width="20px" class="mx-2"></td>
+                        <td>
+                            <a target="_blank" rel="noopener noreferrer" id="ensemblLink" href=""></a>
+                        </td>
+                    </tr>
+                    {% if organism == "human" %}
+                        <tr>
+                            <td class="rowname">DICE-DB<img id="dice-ico" src="" width="30px" class="mx-2"></td>
+                            <td>
+                                <a target="_blank" rel="noopener noreferrer" id="DICELink" href=""></a>
+                            </td>
+                        </tr>
+                    {% elif organism == "mouse" %}
+                        <tr>
+                            <td class="rowname">MGI<img id="mgi-favicon" src="" width="30px" class="mx-2"></td>
+                            <td>
+                                <a target="_blank" rel="noopener noreferrer" id="MGILink" href=""></a>
+                            </td>
+                        </tr>
+                        
+                    {% endif %}
+                    <tr>
+                        <td>Genecards<img id="genecards-ico" src="" width="20px" class="mx-2"></td>
+                        <td>
+                            <a target="_blank" rel="noopener noreferrer" id="genecardsLink" href="http://www.genecards.org"></a>
+                        </td>
+                    </tr>                    
+                    <tr>
+                        <td>Expression <span id="tpmFlag">(TPM)</span> in <span id="celltypeTable"></span></td><td id="infoGeneExpr"></td>
+                    </tr>
+                </table>
+                <br>
+                
+                <br>
+                {% if analysis_type == "annot" %}
+                    <h3>Annotations in slim</h3>
+                    <table id="infoSlimmedAnnotations" class="table table-sm table-bordered table-hover"></table>
+                {% endif %}
+                <h5>All annotations</h5>
+                <table id="infoAllAnnotations" class="table table-sm table-bordered table-hover"></table>
+            </div>
+            <div id="edgeinfo" style="display:none;">
+                <table class="table table-bordered table-hover table-sm">
+                    <tr><td>Relation</td><td id="relation"></td></tr>
+                </table>
+                <table class="table table-bordered table-hover" id="edgedata"></table>
+            </div>
+        </div>
+        <!-- Too many genes modal warning -->
+        <div class="modal fade" id="jobWarnings" tabindex="-1" role="dialog" aria-labelledby="tooManyNodes" aria-hidden="true">
+            <div id="job-warnings" class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Warnings</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                                <li id="manyGenesSuggestion" style="display:none;">Largest subnetwork contains <b><span id="nofGenes"></span> genes</b> (<span id="nofGenesTotal"></span> totally in the network). Genes will be hidden by default (only terms shown).</li>
+                                <li id="manyTermsSuggestion" style="display:none;">Largest subnetwork contains <b><span id="nofTerms"></span> GO terms</b> (<span id="nofTermsTotal"></span> totally in the network). You may resubmit with a lower q-value threshold (if not already) or still render the network and restrict graph by p-value.</li>
+                        </ul>
+                        <p id="renderWarning" style="display:none;">Rendering can take time. Press <b>'Export'</b> to download results in other formats.</p>
+                        <ul>
+                            <li id="unrecognizedGenesWarning" style="display:none;">Following submitted entries were not recognized: <span id="unrecognizedGenes" class="font-weight-bold"></span>. Check <b>Export > ID mapping</b> for details.</li>
+                            <li id="ambiguousGenesWarning" style="display:none;">Following submitted entries can correspond to several genes: <span id="ambiguousGenes" class="font-weight-bold"></span>. Check <b>Export > ID mapping</b> to confirm correct identification. Alternatively you can submit {% if organism == "human" %}Uniprot{% elif organism == "mouse" %}MGI{% endif %} ID directly.</li>
+                        </ul>
+                        <p>Press <b>'Show network'</b> to proceed and view the network.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <img id="rendering-spinner" src="" style="display:none;">
+                        <button id="renderNet" type="button" class="btn btn-secondary">Show network</button>
+                        <div class="btn-group my-2">
+                            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export data</button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'GOnet-csv-res' jobid %}">Data as csv</a>
+                                <a class="dropdown-item" href="{% url 'GOnet-txt-res' jobid %}">Data as txt</a>
+                                <a class="dropdown-item" href="{% url 'GOnet-input-idmap' jobid %}">ID mapping</a>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-item exportCYJS">Network as JSON</div>
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Nothing is enriched -->
+        <div class="modal fade" id="nothingIsEnrichedWarn" tabindex="-1" role="dialog" aria-labelledby="nothingIsEnriched" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">No GO categories are enriched</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>No GO categories were found to be statistically significantly enriched in the list submitted (with FDR q-value restricted to 5%).</p>
+                        <p>You might also want to check correctness of ID conversion.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="btn-group my-2">
+                            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export data</button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'GOnet-input-idmap' jobid %}">ID mapping</a>
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </div>
+    
+{% endblock %}
