@@ -7,23 +7,6 @@ from . import pickle_status
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 SHELLENV = len(sys.argv) > 1 and sys.argv[1] == 'shell'
-RECALCULATE = True
-if not RECALCULATE:
-    sts = pickle_status()
-    if sts == 'outdated':
-        print('W: Ignoring RECALCULATE=False because'\
-              +' source tree is newer than pickles.')
-        RECALCULATE = True
-    elif sts == 'not found':
-        print('W: Ignoring RECALCULATE=False because'\
-              +' pickle files not found.')
-        RECALCULATE = True
-    elif sts == 'up-to-date':
-        print('W: Using pickles for data structures.')
-    else:
-        print('W: Unknown pickle status')
-else:
-    print('W: Recalculating data structures RECALCULATE is True.')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +32,7 @@ def get_secret(setting, secrets=secrets):
 SECRET_KEY = get_secret('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+RECALCULATE = False
 DEBUG = True
 ALLOWED_HOSTS = [u'testserver', u'127.0.0.1']
 ADMINS = [('ADMIN', get_secret('EMAIL_HOST_USER'))]
@@ -122,6 +106,24 @@ DATABASES = {
         'timeout' : 20,
     }
 }
+
+if not RECALCULATE:
+    sts = pickle_status(DATA_DIR)
+    if sts == 'outdated':
+        print('W: Ignoring RECALCULATE=False because'\
+              +' source tree is newer than pickles.')
+        RECALCULATE = True
+    elif sts == 'not found':
+        print('W: Ignoring RECALCULATE=False because'\
+              +' pickle files not found.')
+        RECALCULATE = True
+    elif sts == 'up-to-date':
+        print('W: Using pickles for data structures.')
+    else:
+        print('W: Unknown pickle status')
+else:
+    print('W: Recalculating data structures RECALCULATE is True.')
+
 
 MEDIA_ROOT = os.path.join(DATA_DIR, 'uploads')
 

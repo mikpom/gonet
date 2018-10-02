@@ -16,6 +16,8 @@ from genontol.read import goa as read_goa
 from genontol.ontol import GOntology
 import pickle
 
+PKL_DIR = settings.DATA_DIR
+
 def parse_protname(s):
     cbi = 0
     while (cbi<len(s)-1):
@@ -175,23 +177,23 @@ if settings.RECALCULATE:
         for sp in ('human', 'mouse'):
             for gene in O.get_attr(term, sp):
                 gene2allterms[sp][gene].add(term)
-    pickle.dump(id2go, open(pkg_file(__name__, 'data/pickles/id2go.pkl'), 'wb'))
-    pickle.dump(id2desc, open(pkg_file(__name__, 'data/pickles/id2desc.pkl'), 'wb'))
-    pickle.dump(gname2id, open(pkg_file(__name__, 'data/pickles/gname2id.pkl'), 'wb'))
-    pickle.dump(syn2id, open(pkg_file(__name__, 'data/pickles/syn2id.pkl'), 'wb'))
-    pickle.dump(O, open(pkg_file(__name__, 'data/pickles/O.pkl'), 'wb'))
-    pickle.dump(gene2allterms, open(pkg_file(__name__, 'data/pickles/gene2allterms.pkl'), 'wb'))
-    pickle.dump(gaf, open(pkg_file(__name__, 'data/pickles/gaf.pkl'), 'wb'))
-    pickle.dump(swissprot, open(pkg_file(__name__, 'data/pickles/swissprot.pkl'), 'wb'))
+    pickle.dump(id2go, open(os.path.join(PKL_DIR, '_id2go.pkl'), 'wb'))
+    pickle.dump(id2desc, open(os.path.join(PKL_DIR, '_id2desc.pkl'), 'wb'))
+    pickle.dump(gname2id, open(os.path.join(PKL_DIR, '_gname2id.pkl'), 'wb'))
+    pickle.dump(syn2id, open(os.path.join(PKL_DIR, '_syn2id.pkl'), 'wb'))
+    pickle.dump(O, open(os.path.join(PKL_DIR, '_O.pkl'), 'wb'))
+    pickle.dump(gene2allterms, open(os.path.join(PKL_DIR, '_gene2allterms.pkl'), 'wb'))
+    pickle.dump(gaf, open(os.path.join(PKL_DIR, '_gaf.pkl'), 'wb'))
+    pickle.dump(swissprot, open(os.path.join(PKL_DIR, '_swissprot.pkl'), 'wb'))
 else:
-    O = pickle.load(open(pkg_file(__name__, 'data/pickles/O.pkl'), 'rb'))
-    gene2allterms = pickle.load(open(pkg_file(__name__, 'data/pickles/gene2allterms.pkl'), 'rb'))
-    gname2id = pickle.load(open(pkg_file(__name__, 'data/pickles/gname2id.pkl'), 'rb'))
-    syn2id = pickle.load(open(pkg_file(__name__, 'data/pickles/syn2id.pkl'), 'rb'))
-    id2go = pickle.load(open(pkg_file(__name__, 'data/pickles/id2go.pkl'), 'rb'))
-    id2desc = pickle.load(open(pkg_file(__name__, 'data/pickles/id2desc.pkl'), 'rb'))
-    gaf = pickle.load(open(pkg_file(__name__, 'data/pickles/gaf.pkl'), 'rb'))
-    swissprot = pickle.load(open(pkg_file(__name__, 'data/pickles/swissprot.pkl'), 'rb'))
+    O = pickle.load(open(os.path.join(PKL_DIR, '_O.pkl'), 'rb'))
+    gene2allterms = pickle.load(open(os.path.join(PKL_DIR, '_gene2allterms.pkl'), 'rb'))
+    gname2id = pickle.load(open(os.path.join(PKL_DIR, '_gname2id.pkl'), 'rb'))
+    syn2id = pickle.load(open(os.path.join(PKL_DIR, '_syn2id.pkl'), 'rb'))
+    id2go = pickle.load(open(os.path.join(PKL_DIR, '_id2go.pkl'), 'rb'))
+    id2desc = pickle.load(open(os.path.join(PKL_DIR, '_id2desc.pkl'), 'rb'))
+    gaf = pickle.load(open(os.path.join(PKL_DIR, '_gaf.pkl'), 'rb'))
+    swissprot = pickle.load(open(os.path.join(PKL_DIR, '_swissprot.pkl'), 'rb'))
     gaf_ids = {sp:set(gaf[sp].db_object_id) for sp in gaf}
 
 def get_slim(slimname, domain):
