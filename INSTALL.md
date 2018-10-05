@@ -2,7 +2,7 @@
 
 ## Requirements:
 1. python >= 3.6 interpreter
-2. packages listed in python_requirements.txt
+2. Python packages Django, celery, networkx>=2.0, pandas, numpy
 3. A folder with writing permissions for app files.
 
 ## Django server set up instructions
@@ -10,9 +10,9 @@
    and which will be used to run apps.  Use `-p python3` to enforce
    python3 enterpreter.
 
-2. install required packages by
+2. install required Python packages by running
 
-        pip install --prefix /path/to/virtualenv -r python_requirements.txt
+        pip install --prefix /path/to/virtualenv -r <package name>
 
 3. install genontol package from a git repo
 

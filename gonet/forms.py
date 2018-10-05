@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Form
+from django.forms import ModelForm
 from .models import GOnetSubmission
 from django.forms import CharField, ChoiceField, TypedChoiceField,\
                          Select as select_widget, \

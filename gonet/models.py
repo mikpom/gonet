@@ -63,7 +63,6 @@ class GOnetSubmission(models.Model):
     paste_data = models.TextField(default='', blank=True)
     parsed_data = DataFrameField()
     cli_addr = models.CharField(max_length = 20, default = '0.0.0.0')
-    rownames = models.BooleanField(default=True, blank=True)
     csv_separator = models.CharField(max_length=10, default='comma', choices=sep_choices)
     job_name = models.CharField(max_length=40, default='', blank=True)
     organism = models.CharField(max_length=10, default='human', choices=organism_choices)
