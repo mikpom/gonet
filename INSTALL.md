@@ -12,7 +12,7 @@
 
 2. install required Python packages by running
 
-        pip install --prefix /path/to/virtualenv -r <package name>
+        pip install --prefix /path/to/virtualenv <package name>
 
 3. install genontol package from a git repo
 
