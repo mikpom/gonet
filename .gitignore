@@ -109,3 +109,4 @@ gonet/data/pickles/*
 !gonet/data/pickles/.gitkeep
 gonet_data/
 gonet/migrations/*
+!gonet/migrations/__init__.py
