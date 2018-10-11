@@ -33,7 +33,7 @@ SECRET_KEY = get_secret('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 RECALCULATE = False
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [u'testserver', u'127.0.0.1']
 ADMINS = [('ADMIN', get_secret('EMAIL_HOST_USER'))]
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
