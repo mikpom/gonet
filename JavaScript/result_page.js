@@ -454,7 +454,7 @@ function _colorGenesAttr(attr, logscale) {
 function colorGenesBy(colorOpt, callback) {
     if (colorOpt == 'default') {
         var stile = cy.style();
-        stile.selector('node[nodetype="gene"]:unselected').style("background-color", 'rgb(237, 99, 63)');
+        stile.selector('node[nodetype="gene"]:unselected').style("background-color", '#f2a57b');
         stile.update();
         if (callback) {
             callback()
