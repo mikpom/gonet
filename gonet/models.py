@@ -121,11 +121,24 @@ class GOnetSubmission(models.Model):
         job_status = GOnetJobStatus.objects.get(pk=self.id)
         colnames = ['submit_name', 'val']
         if (self.file_uploaded):
-            self.parsed_data = pd.read_csv(self.uploaded_file,
-                               sep = self.csv_separator, names=colnames)
+            stream = self.uploaded_file
         else:
-            self.parsed_data = pd.read_csv(io.StringIO(self.paste_data),
-                               sep = self.csv_separator, names=colnames)
+            stream = io.StringIO(self.paste_data)
+
+        # Check for multiple separators
+        ln = stream.readline()
+        if len(ln.split(self.csv_separator))>2:
+            log.info('Got multiple separators on the first line. ',
+                     extra={'jobid':jobid})
+            job_status.err += ';too_many_seps'
+            job_status.rdy = True
+            job_status.save()
+            return
+
+        stream.seek(0)
+        # Read using Pandas
+        self.parsed_data = pd.read_csv(stream, sep=self.csv_separator, names=colnames)
+        
         if (len(self.parsed_data)>20000):
             job_status.err += ';too_many_entries'
             log.info('Too many entries. Got '\

@@ -369,6 +369,11 @@ class GOnetSimpleTestCase(TransactionTestCase):
         resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
         self.assertContains(resp, 'Maximum number of entries is 20000.')
 
+    def test_one_line_entries(self):
+        input_str = 'TAF13, AFP, ELMO2, PITX3, FSHB, KCNJ6'
+        req = dict(sbmsn_param, **{'paste_data':input_str, 'csv_separator':','})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        self.assertContains(resp, 'Multiple separators detected')
         
 class GOnetAnnotTestCase(TransactionTestCase):
     def test_GO_annotate_genelist1(self):

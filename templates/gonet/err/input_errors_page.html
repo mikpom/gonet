@@ -9,6 +9,7 @@
 {% block content %}
     <div class="container-fluid my-4">
         <p class="my-3">{{ error }}</p>
+        <p class="my-3">See <a href="{% url "doc-part" "input" %}">Input</a> for an example.</p>
         <div class="w-25 px-4" id="input-example">
             {% if invalid_entries %}
                 {% for entry in invalid_entries %}

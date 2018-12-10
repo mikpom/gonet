@@ -51,6 +51,13 @@ def check_analysis_progress(request, jobid):
         if 'too_many_entries' in job_err:
             return render(request, 'gonet/err/input_errors_page.html',
                           {'error': 'Maximum number of entries is 20000.'})
+
+        if 'too_many_seps' in job_err:
+            return render(request, 'gonet/err/input_errors_page.html',
+                          {'error': 'Multiple separators detected on the first line. '+\
+                           'Separator is used between a gene and a contrast value, so '+\
+                           'should be not more than one per line.'})
+        
         sn = GOnetSubmission.objects.get(pk = jobid)
         if 'genes_not_recognized' in job_err:
             return render(request, 'gonet/err/genes_not_recognized_error_page.html',

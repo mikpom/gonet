@@ -46,10 +46,16 @@
                         <p><a href="{% url 'doc-part' 'input' %}">Input format</a></p>
                     </td>
                     <td>{{ form.paste_data }}</td></tr>
-                <tr><td>Separator (if FC sign is supplied)</td><td>{{ form.csv_separator }}</td></tr>
                 <tr>
                     <td>Job name (optional)</td>
                     <td>{{ form.job_name }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <p class="my-1">Contrast value separator</p>
+                        <p class="my-1">(matters only if contrast value is supplied)</p>
+                    </td>
+                    <td>{{ form.csv_separator }}</td>
                 </tr>
                 <tr class="table-primary"><th colspan="2" class="par_grp_sep">Job parameters</th></tr>
                 <tr>
