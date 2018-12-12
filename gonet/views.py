@@ -180,3 +180,5 @@ def doc_part(request, doc_entry):
     elif doc_entry == 'enrich_bg':
         return render(request, 'gonet/docs/GOnet_docs_enrich_bg.html')
     
+def adhoc_job_submission(request):
+    return HttpResponseRedirect(urls.reverse('GOnet-submit-form'))

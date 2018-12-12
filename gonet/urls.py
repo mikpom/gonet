@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^expr(?P<jobid>.+)/(?P<celltype>.*)$', views.expr_values, name='GOnet-get-expression'),
     url(r'^job(?P<jobid>.+)/txt_res', views.serve_res_txt, name='GOnet-txt-res'),
     url(r'^job(?P<jobid>.+)/csv_res', views.serve_res_csv, name='GOnet-csv-res'),
-    url(r'^doc/(?P<doc_entry>.+)$', views.doc_part, name='doc-part')
+    url(r'^doc/(?P<doc_entry>.+)$', views.doc_part, name='doc-part'),
+    url(r'^\)$', views.adhoc_job_submission, name='GOnet-adhoc-submit-form'),
 
 ]
