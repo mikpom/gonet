@@ -15,7 +15,7 @@
     </div>
 {% endblock %}
 {% block content %}
-    <div class="container">
+    <div class="container my-4">
         {% block doc_content %}{% endblock %}
         <footer class="pt-4 my-md-5 pt-md-5 border-top">
             <p>
@@ -23,7 +23,7 @@
                     <a href="{% url 'doc-part' 'index' %}">Index</a>
                 </span>
                 <span class="mx-4">
-                    <a href="{% url 'doc-part' 'contact' %}">Contact</a>
+                    <a href="{% url 'doc-part' 'contact' %}">Contact & Citation</a>
                 </span>
             </p>
         </footer>
