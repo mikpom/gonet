@@ -1,12 +1,12 @@
 import genontol
-print(genontol.__file__)
 import json
 import networkx as nx
 import numpy as np
 import pandas as pd
 from . import ontol
 from . import cyjs
-from .ontol import O, gaf, get_domain_subgraph, gene2allterms
+from .ontol import O, gaf, get_domain_subgraph, gene2allterms, \
+    slimterms, id2go
 from .geneid import _dtypes
 from gonet.clry import celery_app
 
@@ -46,9 +46,8 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
             
         else: #Node is a gene
             try: 
-                _annots = sorted(filter(lambda t: ontol.O.get_attr(t, 'namespace')==namespace,
-                                           ontol.id2go[sp][node]))
-                #ontol.gene2terms[node][namespace]
+                _annots = sorted(filter(lambda t: O.get_attr(t, 'namespace')==namespace,
+                                           id2go[sp][node]))
             except KeyError:
                 _annots = []
             allterms = [O.get_term(annot) for annot in _annots]
@@ -170,17 +169,17 @@ def build_slim_GOnet(parsed_data, slim, namespace, sp='human', jobid=None):
     # Don't consider duplicates
     parsed_data = parsed_data[parsed_data['duplicate_of']=='']
     if isinstance(slim, str):
-        slimterms = ontol.get_slim(slim, namespace)
+        terms = slimterms(slim, namespace)
         Gr = get_domain_subgraph(O, namespace).reverse(copy=False)
     elif isinstance(slim, list):
-        slimterms = slim
+        terms = slim
         Gr = O.G.reverse(copy=False)
     # will create new nodes
-    netG = induced_connected_subgraph(Gr, slimterms)
+    netG = induced_connected_subgraph(Gr, terms)
     gene2slimterms = {}
     for gene_id in parsed_data.index:
         netG.add_node(gene_id)
-        geneterms = gene2allterms[sp][gene_id].intersection(slimterms)
+        geneterms = gene2allterms[sp][gene_id].intersection(terms)
         gene2slimterms[gene_id] = geneterms
         for slimterm in geneterms:
             go_successors = filter(lambda n: n.startswith('GO:') and \

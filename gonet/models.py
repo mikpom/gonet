@@ -7,15 +7,16 @@ import json
 from django.db import models
 from django.utils import timezone
 import pandas as pd
-from gonet.exceptions import DataNotProvidedError, InputValidationError
-from gonet.fields import DataFrameField
+from .exceptions import DataNotProvidedError, InputValidationError
+from .fields import DataFrameField
 from .geneid import resolve_genenames_df, id_map_txt, _dtypes
 from .expression import hpa_data, dice_data, \
     bgee_data, celltype_choices
-from .ontol import O, enrich_txt, annot_txt, \
+from .ontol import O, compute_enrichment
+from .export import enrich_txt, annot_txt, \
     enrich_csv, annot_csv
-from . import ontol, graph
-from gonet.utils import thread_func, process_signature
+from .graph import build_enrich_GOnet, build_slim_GOnet
+from .utils import thread_func, process_signature
 
 log = logging.getLogger(__name__)
 
@@ -233,7 +234,7 @@ class GOnetSubmission(models.Model):
             elif self.bg_type == 'predef':
                 kwargs = {'bg_genes':self.bg_cell, 'bg_id' : jobid}
             kwargs.update({'jobid':jobid})
-            s = ontol.compute_enrichment.signature(args=args, kwargs=kwargs)
+            s = compute_enrichment.signature(args=args, kwargs=kwargs)
             self.enrich_res_df = pd.read_json(process_signature(s))\
                                    .dropna().query('p<0.1')
             if (self.output_type=="txt"):
@@ -244,7 +245,7 @@ class GOnetSubmission(models.Model):
                 #print('from run_analysis', type(self.parsed_data.loc['Q16873', 'mgi_id']))
                 args = (self.enrich_res_df.to_json(), self.qvalue,
                         self.parsed_data.to_json(), self.namespace, self.organism)
-                s = graph.build_enrich_GOnet.signature(args=args, kwargs={'jobid':jobid})
+                s = build_enrich_GOnet.signature(args=args, kwargs={'jobid':jobid})
                 self.network = process_signature(s)
         elif self.analysis_type=='annot':
             if self.slim == 'custom':
@@ -256,7 +257,7 @@ class GOnetSubmission(models.Model):
             elif (self.output_type=="csv"):
                 self.get_annot_res_csv()
             elif (self.output_type=="graph"):
-                s = graph.build_slim_GOnet.signature(args=(self.parsed_data.to_json(),
+                s = build_slim_GOnet.signature(args=(self.parsed_data.to_json(),
                                                            slim, self.namespace, self.organism),
                                                      kwargs={'jobid':jobid})
                 self.network = process_signature(s)
