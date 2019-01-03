@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 import logging
 from .forms import GOnetSubmitForm
 from .models import GOnetSubmission, GOnetJobStatus
-from .ontol import celltype_choices
+from .expression import celltype_choices
 from gonet.exceptions import DataNotProvidedError, \
                                     InputValidationError
 from django import urls

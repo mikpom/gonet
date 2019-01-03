@@ -233,27 +233,27 @@ class GOnetEnrichmentWBgTestCase(TransactionTestCase):
 class GeneNamesResolutionTest(TransactionTestCase):
     def test_resolution(self):
         # CMKBR7 is synonym of CCR7
-        # Q9Y5X4 is PNR
+        # O14804 is PNR
         input_lines = '\n'.join(["PNR", "KIAA0457", "ELDF10", "CCR7", "AIM",
-                                 "Q9Y5X4", "CMKBR7", "O14804", "P28068", "FOO"])
+                                 "O14804", "CMKBR7", "Q9UNH8", "P28068", "FOO"])
         req = dict(sbmsn_param, **{'paste_data':input_lines})
         URL = urls.reverse('GOnet-submit-form')
         resp = c.post(URL, req, follow=True)
         sn = GOnetSubmission.objects.latest('submit_time')
         res_d = sn.parsed_data['submit_name'].to_dict()
         self.assertDictEqual(res_d, {'O75787': 'ELDF10', 'P32248': 'CCR7',
-                                     'Q9NRI5': 'KIAA0457', 'Q9Y5X4': 'PNR',
-                                     '_00000': 'Q9Y5X4', '_00001': 'CMKBR7',
-                                     'O14804' :'O14804', 'P28068':'P28068',
+                                     'Q9NRI5': 'KIAA0457', 'O14804': 'PNR',
+                                     '_00000': 'O14804', '_00001': 'CMKBR7',
+                                     'Q9UNH8' :'Q9UNH8', 'P28068':'P28068',
                                      'P26358' : 'AIM', '_00002':'FOO'})
-        self.assertEqual(sn.parsed_data.loc['_00000', 'duplicate_of'], 'Q9Y5X4')
+        self.assertEqual(sn.parsed_data.loc['_00000', 'duplicate_of'], 'O14804')
 
         #Test id mapping response
         idmap_resp = c.get(urls.reverse('GOnet-input-idmap', args=(str(sn.id),)))
         b = io.StringIO(); b.write(idmap_resp.content.decode()); b.seek(0)
         res = pd.read_csv(b, sep='\t', index_col=0)
         self.assertEqual(res.loc['CMKBR7', 'Notes'], 'same as CCR7')
-        self.assertEqual(res.loc['Q9Y5X4', 'Notes'], 'same as PNR')
+        self.assertEqual(res.loc['O14804', 'Notes'], 'same as PNR')
         self.assertEqual(res.loc['AIM', 'Description'], 'DNA (cytosine-5)-methyltransferase 1')
         self.assertIn('ambiguous', res.loc['PNR', 'Notes'])
         self.assertIn('not recognized', res.loc['FOO', 'Notes'])
@@ -265,7 +265,7 @@ class GeneNamesResolutionTest(TransactionTestCase):
         G = cyjs.cyjs2nx(json.loads(sn.network))
         self.assertEqual(G.node['_00002']['data']['identified'], False)
         self.assertEqual(G.node['P32248']['data']['identified'], True)
-        self.assertEqual(G.node['Q9Y5X4']['data']['ambiguous'], True)
+        self.assertEqual(G.node['O14804']['data']['ambiguous'], True)
 
     def test_resolution_accidental_space(self):
         

@@ -7,6 +7,7 @@ import pandas as pd
 from . import ontol
 from . import cyjs
 from .ontol import O, gaf, get_domain_subgraph, gene2allterms
+from .geneid import _dtypes
 from gonet.clry import celery_app
 
 def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enrich_res_df=None):
@@ -144,7 +145,7 @@ def induced_connected_subgraph(G, nodes):
 @celery_app.task
 def build_enrich_GOnet(enrich_res_df, qvalue, parsed_data, namespace, sp='human', jobid=None):
     df = pd.read_json(enrich_res_df)
-    parsed_data = pd.read_json(parsed_data, dtype=ontol._dtypes)
+    parsed_data = pd.read_json(parsed_data, dtype=_dtypes)
     #print('from build_enrich_GOnet', type(parsed_data.iloc['Q16873', 'mgi_id']))
     # Don't consider duplicates
     parsed_data = parsed_data[parsed_data['duplicate_of']=='']
@@ -165,7 +166,7 @@ def build_enrich_GOnet(enrich_res_df, qvalue, parsed_data, namespace, sp='human'
 
 @celery_app.task
 def build_slim_GOnet(parsed_data, slim, namespace, sp='human', jobid=None):
-    parsed_data = pd.read_json(parsed_data, dtype=ontol._dtypes)
+    parsed_data = pd.read_json(parsed_data, dtype=_dtypes)
     # Don't consider duplicates
     parsed_data = parsed_data[parsed_data['duplicate_of']=='']
     if isinstance(slim, str):

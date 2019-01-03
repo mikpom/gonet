@@ -4,18 +4,16 @@ import io
 import time
 import logging
 import json
-import networkx as nx
 from django.db import models
 from django.utils import timezone
 import pandas as pd
-pd.set_option('display.width', 240)
 from gonet.exceptions import DataNotProvidedError, InputValidationError
 from gonet.fields import DataFrameField
-from .ontol import O, hpa_data, dice_data, bgee_data, \
-    prepare_enrich_res_txt as enrich_txt, \
-    prepare_annot_res_txt as annot_txt, \
-    prepare_enrich_res_csv as enrich_csv, \
-    prepare_annot_res_csv as annot_csv
+from .geneid import resolve_genenames_df, id_map_txt, _dtypes
+from .expression import hpa_data, dice_data, \
+    bgee_data, celltype_choices
+from .ontol import O, enrich_txt, annot_txt, \
+    enrich_csv, annot_csv
 from . import ontol, graph
 from gonet.utils import thread_func, process_signature
 
@@ -48,9 +46,9 @@ class GOnetSubmission(models.Model):
                     (0.0001, '**** ('+chr(8804)+' 0.0001)'))
     bg_choices = (('DICE-any', 'Any DICE-DB celltype'),) \
                  + (('HPA-any', 'Any HPA celltype'),) \
-                 + tuple(ontol.celltype_choices['human'].items()) \
+                 + tuple(celltype_choices['human'].items()) \
                  + (('Bgee-any', 'Any Bgee celltype'),) \
-                 + tuple(ontol.celltype_choices['mouse'].items())
+                 + tuple(celltype_choices['mouse'].items())
     bgtype_choices = (('all', 'all annotated genes'),
                       ('custom', 'custom gene list'),
                       ('predef', 'predefined backgrounds'))
@@ -155,10 +153,10 @@ class GOnetSubmission(models.Model):
             return
         self.parsed_data['submit_name'] = self.parsed_data['submit_name'].str.strip()
         self.parsed_data.fillna({'FC':0.0}, inplace=True)
-        s = ontol.resolve_genenames_df.signature(args=(self.parsed_data.to_json(), self.organism),
+        s = resolve_genenames_df.signature(args=(self.parsed_data.to_json(), self.organism),
                                                  kwargs={'jobid':jobid})
         r = process_signature(s)
-        parsed_data = pd.read_json(r, dtype=ontol._dtypes)
+        parsed_data = pd.read_json(r, dtype=_dtypes)
         self.parsed_data = parsed_data
         #print('from run_pre_analysis', type(parsed_data.loc['Q16873', 'mgi_id']))
         if self.parsed_data['identified'].sum() == 0.0:
@@ -179,7 +177,7 @@ class GOnetSubmission(models.Model):
             if self.analysis_type == 'enrich':
                 self.bg_genes = pd.read_csv(self.bg_file,
                                    names=colnames)
-                s = ontol.resolve_genenames_df.signature(args=(self.bg_genes.to_json(),
+                s = resolve_genenames_df.signature(args=(self.bg_genes.to_json(),
                                                          self.organism), kwargs={'jobid':jobid})
                 bg_genes = pd.read_json(process_signature(s))
                 self.bg_genes = bg_genes
@@ -269,7 +267,7 @@ class GOnetSubmission(models.Model):
         log.info('run_analysis done', extra={'jobid':jobid})
 
     def get_id_map(self):
-        s = ontol.prepare_id_map_txt.signature(args=(self.parsed_data.to_json(),),
+        s = id_map_txt.signature(args=(self.parsed_data.to_json(),),
                                                kwargs={'sp':self.organism,
                                                        'jobid':str(self.id)})
         r = process_signature(s)

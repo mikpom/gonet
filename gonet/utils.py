@@ -1,3 +1,4 @@
+from collections import defaultdict
 import time
 import logging
 from threading import Thread
@@ -80,3 +81,9 @@ def process_signature(s, jobid=None, celery=True, serializer='json'):
     if issubclass(type(r.result), Exception):
         raise r.result
     return r.result
+
+def to_dict_of_lists(s):
+     ret = defaultdict(list)
+     for i in s.iteritems():
+          ret[i[0]].append(i[1])
+     return dict(ret)
