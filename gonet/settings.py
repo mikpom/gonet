@@ -27,12 +27,10 @@ def get_secret(setting, secrets=secrets):
             return None
         raise ImproperlyConfigured("Set the {} setting".format(setting))
     
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-RECALCULATE = False
 DEBUG = True
 ALLOWED_HOSTS = [u'testserver', u'127.0.0.1']
 ADMINS = [('ADMIN', get_secret('EMAIL_HOST_USER'))]
@@ -106,24 +104,6 @@ DATABASES = {
         'timeout' : 20,
     }
 }
-
-if not RECALCULATE:
-    sts = pickle_status(DATA_DIR)
-    if sts == 'outdated':
-        print('W: Ignoring RECALCULATE=False because'\
-              +' source tree is newer than pickles.')
-        RECALCULATE = True
-    elif sts == 'not found':
-        print('W: Ignoring RECALCULATE=False because'\
-              +' pickle files not found.')
-        RECALCULATE = True
-    elif sts == 'up-to-date':
-        print('W: Using pickles for data structures.')
-    else:
-        print('W: Unknown pickle status')
-else:
-    print('W: Recalculating data structures RECALCULATE is True.')
-
 
 MEDIA_ROOT = os.path.join(DATA_DIR, 'uploads')
 

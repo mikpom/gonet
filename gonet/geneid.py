@@ -116,21 +116,6 @@ _dtypes = {'gn_in_swp' : np.int8, 'identified' : np.bool_,
            'uniprot_id':'object', 'mgi_id' : 'object', 'desc':'object',
            'FC':np.float_}
 
-# Outline of resolve_geneid algorithm
-# if uniprot_id supplied:
-#     return 
-# else:
-#     if resolvable_symbol:
-#         if in swp :
-#             return first
-#     if was not resolved to swp:    
-#         if resolvable with synomyms:
-#              if syn in swp:
-#                   return first
-#              else:
-#                   return first
-# 
-# 
 def resolve_geneid(geneid, sp):
     ret = {k:v for k,v in _defaults.items()}
     # valid Uniprot ID supplied for human
