@@ -484,6 +484,7 @@ class GOnetAnnotTestCase(TransactionTestCase):
         res = pd.read_csv(b, sep=',', index_col=0)
 
 class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
+    # TODO: custom annotation and namespace relation
     def test_GO_annotate_genelist2(self):
         input_lines = open(pkg_file(__name__, 'data/tests/genelist2.tsv'), 'r').read()
         custom_annotation = open(pkg_file(__name__, 'data/tests/custom_annotation.txt'), 'r').read()
@@ -531,13 +532,3 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         self.assertContains(resp, 'Some of the custom terms provided were not found')
         self.assertContains(resp, 'GO:1234567')
 
-    def test_GO_annotate_goslim_generic_plus_root(self):
-        input_lines = open(pkg_file(__name__, 'data/tests/genelist2.tsv'), 'r').read()
-        custom_annotation = open(pkg_file(__name__, 'data/tests/custom_annotation.txt'), 'r').read()
-        custom_annotation += 'GO:1234567'
-        req = dict(sbmsn_param, **{'paste_data':input_lines, 'analysis_type':'annot',
-                                   'slim':'custom', 'custom_terms':custom_annotation})
-        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
-        self.assertContains(resp, 'Some of the custom terms provided were not found')
-        self.assertContains(resp, 'GO:1234567')
-        
