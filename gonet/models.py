@@ -36,7 +36,8 @@ class GOnetSubmission(models.Model):
     organism_choices = (('human', 'Human'), ('mouse', 'Mouse'))
     analysis_choices = (('enrich', 'GO term enrichment'), ('annot', 'GO term annotation'))
     output_choices = (('graph', 'Interactive Graph'), ('txt', 'Hierarchical TXT'), ('csv', 'CSV'))
-    slim_choices = (('goslim_generic', 'Generic GO slim'), ('goslim_immunol', 'GO slim for immunology'),
+    slim_choices = (('goslim_generic', 'Generic GO slim'),
+                    ('goslim_immunol', 'GO slim for immunology (experimental; process only)'),
                     ('custom', 'Custom GO terms'))
     namespace_choices = (('biological_process', 'biological_process'),
                          ('molecular_function', 'molecular_function'),
@@ -252,6 +253,8 @@ class GOnetSubmission(models.Model):
                 slim = list(self.parsed_custom_terms['termid'])
             else:
                 slim = self.slim
+                if slim == 'goslim_immunol':
+                    self.namespace = 'biological_process'
             if (self.output_type=="txt"):
                 self.get_annot_res_txt()
             elif (self.output_type=="csv"):
