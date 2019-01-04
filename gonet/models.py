@@ -69,7 +69,7 @@ class GOnetSubmission(models.Model):
     qvalue = models.FloatField(default=0.05)
     network = models.TextField(default='{}', blank=True)
     namespace = models.CharField(max_length=20, default='biological_process',
-                                 choices=namespace_choices, blank=True)
+                                 choices=namespace_choices)
     analysis_type = models.CharField(max_length=12, default='enrich', choices=analysis_choices)
     output_type = models.CharField(max_length=12, default='graph', choices=output_choices)
     slim = models.CharField(max_length=20, default='goslim_generic', choices=slim_choices, blank=True)
