@@ -10,7 +10,6 @@ import pandas as pd
 from gonet import cyjs
 from . import job_req
 
-
 c = Client()
 class GOnetAnnotTestCase(TransactionTestCase):
     def test_GO_annotate_genelist1(self):
@@ -164,7 +163,7 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         custom_annotation = open(pkg_file(__name__, 'data/custom_annotation.txt'), 'r').read()
         custom_annotation += 'GO:1234567'
         req = dict(job_req, **{'paste_data':input_lines, 'analysis_type':'annot',
-                                   'slim':'custom', 'custom_terms':custom_annotation})
+                               'slim':'custom', 'custom_terms':custom_annotation})
         resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
         self.assertContains(resp, 'Some of the custom terms provided were not found')
         self.assertContains(resp, 'GO:1234567')

@@ -60,7 +60,3 @@ class JSONField(models.Field):
 
     def get_default(self):
         return {}
-
-class JobErrorsField(JSONField):
-    def get_default(self):
-        return {'err':[], 'exc':[]}

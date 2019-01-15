@@ -5,7 +5,6 @@ from django import urls
 from pkg_resources import resource_filename as pkg_file
 import json
 from ..models import GOnetSubmission
-import numpy as np
 import pandas as pd
 from gonet import cyjs
 from . import job_req
@@ -104,7 +103,6 @@ class DefaultTestCase(TransactionTestCase):
             resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
             sn = GOnetSubmission.objects.latest('submit_time')
             self.assertIn('GO:0006334', set(sn.enrich_res_df.query('q<0.05')['term']))
-        
 
     def test_GO_enrichment_nothing_enriched(self):
         input_lines = open(pkg_file(__name__, 'data/genelist5.txt'), 'r').read()

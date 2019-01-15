@@ -1,7 +1,6 @@
 import os
 import uuid
 import io
-import time
 import logging
 import traceback
 import json
@@ -9,9 +8,9 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 import pandas as pd
-from .exceptions import DataNotProvidedError, InputValidationError
-from .fields import DataFrameField, JobErrorsField
-from .geneid import resolve_genenames_df, id_map_txt, _dtypes
+from .exceptions import *
+from .fields import DataFrameField, JSONField
+from .geneid import resolve_genes, id_map_txt, _dtypes
 from .expression import hpa_data, dice_data, \
     bgee_data, celltype_choices
 from .ontol import O, compute_enrichment
@@ -22,21 +21,18 @@ from .utils import thread_func, process_signature
 
 log = logging.getLogger(__name__)
 
-def _pprint_successors(ret, format_func, G, node, indent=1):
-    for s in G.successors(node):
-        ret.append(format_func(s, indent))
-        _pprint_successors(ret, format_func, G, s, indent=indent+1)
-
 class GOnetJobStatus(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     rdy = models.BooleanField(default=True)
-    err = JobErrorsField()
+    err = JSONField()
 
 class GOnetSubmission(models.Model):
     sep_choices = (('\t', '{tab}'), (',', '{,}'), ('\s+', 'Any whitespace'))
     organism_choices = (('human', 'Human'), ('mouse', 'Mouse'))
     analysis_choices = (('enrich', 'GO term enrichment'), ('annot', 'GO term annotation'))
-    output_choices = (('graph', 'Interactive Graph'), ('txt', 'Hierarchical TXT'), ('csv', 'CSV'))
+    output_choices = (('graph', 'Interactive Graph'),
+                      ('txt', 'Hierarchical TXT'),
+                      ('csv', 'CSV'))
     slim_choices = (('goslim_generic', 'Generic GO slim'),
                     ('goslim_immunol', 'GO slim for immunology (experimental; process only)'),
                     ('custom', 'Custom GO terms'))
@@ -59,7 +55,8 @@ class GOnetSubmission(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     submit_time = models.DateTimeField('Submission time', default=timezone.localtime)
-    uploaded_file = models.FileField(upload_to=os.path.join('csv/'), default='', blank=True)
+    uploaded_file = models.FileField(upload_to=os.path.join('csv/'),
+                                     default='', blank=True)
     file_uploaded = models.BooleanField(default=True)
     paste_data = models.TextField(default='', blank=True)
     parsed_data = DataFrameField()
@@ -71,13 +68,18 @@ class GOnetSubmission(models.Model):
     network = models.TextField(default='{}', blank=True)
     namespace = models.CharField(max_length=20, default='biological_process',
                                  choices=namespace_choices)
-    analysis_type = models.CharField(max_length=12, default='enrich', choices=analysis_choices)
-    output_type = models.CharField(max_length=12, default='graph', choices=output_choices)
-    slim = models.CharField(max_length=20, default='goslim_generic', choices=slim_choices, blank=True)
-    bg_type = models.CharField(max_length=20, default='all', choices=bgtype_choices, blank=True)
+    analysis_type = models.CharField(max_length=12, default='enrich',
+                                     choices=analysis_choices)
+    output_type = models.CharField(max_length=12, default='graph',
+                                   choices=output_choices)
+    slim = models.CharField(max_length=20, default='goslim_generic',
+                            choices=slim_choices, blank=True)
+    bg_type = models.CharField(max_length=20, default='all',
+                               choices=bgtype_choices, blank=True)
     bg_file = models.FileField(upload_to=os.path.join('csv/'), default='', blank=True)
     bg_genes = DataFrameField(default='', blank=True)
-    bg_cell = models.CharField(max_length=20, default='DICE-any', choices=bg_choices, blank=True)
+    bg_cell = models.CharField(max_length=20, default='DICE-any',
+                               choices=bg_choices, blank=True)
     custom_terms = models.TextField(default='', blank=True)
     parsed_custom_terms = DataFrameField(default='', blank=True)
     enrich_res_df = DataFrameField(default='')
@@ -94,32 +96,33 @@ class GOnetSubmission(models.Model):
             if len(bg_file.read()) == 0:
                 raise DataNotProvidedError('Background file provided is empty')
             bg_file.seek(0)
-        submsn = cls(job_name=cln_data['job_name'], organism=cln_data['organism'],
-                     paste_data=cln_data['paste_data'], namespace=cln_data['namespace'],
-                     analysis_type=cln_data['analysis_type'], output_type=cln_data['output_type'],
-                     slim=cln_data['slim'], csv_separator=cln_data['csv_separator'],
-                     uploaded_file=genelist_file, bg_type=cln_data['bg_type'],bg_file=bg_file,
-                     bg_cell=cln_data['bg_cell'], custom_terms=cln_data['custom_terms'],
-                     qvalue=cln_data['qvalue'], cli_addr=cli)
-        if ((not submsn.uploaded_file) and (submsn.paste_data=='')):
-            raise DataNotProvidedError('File with gene list should be uploaded ' \
-                                        + 'or text with data pasted in the corresponding section\n')
-        if ((submsn.analysis_type=="annot") and \
-            (submsn.slim=="custom") and (submsn.custom_terms=='')):
-                        raise DataNotProvidedError('Custom GO terms option specified ' \
-                                        + 'but corresponding text field is empty\n')
-        elif (submsn.uploaded_file):
-            submsn.file_uploaded = True
-        elif (submsn.paste_data != ''):
-            submsn.file_uploaded = False
-        submsn.save()
-        return submsn
+        kwargs = cln_data
+        kwargs.update({'cli_addr':cli, 'bg_file':bg_file,
+                       'uploaded_file':genelist_file})
+        sn = cls(**kwargs)
+        if ((not sn.uploaded_file) and (sn.paste_data=='')):
+            msg = 'File with gene list should be uploaded ' \
+                  + 'or text with data pasted in the corresponding section\n'
+            raise DataNotProvidedError(msg)
+        if ((sn.analysis_type=="annot") and \
+            (sn.slim=="custom") and (sn.custom_terms=='')):
+            msg = 'Custom GO terms option specified ' \
+                                        + 'but corresponding text field is empty\n'
+            raise DataNotProvidedError(msg)
+        elif (sn.uploaded_file):
+            sn.file_uploaded = True
+        elif (sn.paste_data != ''):
+            sn.file_uploaded = False
+        sn.save()
+        return sn
 
     @thread_func
     def run_pre_analysis(self):
+        
         jobid=str(self.id)
         log.info('Starting pre analysis...', extra={'jobid':jobid})
         job_status = GOnetJobStatus.objects.get(pk=self.id)
+        
         try:
             if (self.file_uploaded):
                 stream = self.uploaded_file
@@ -132,102 +135,99 @@ class GOnetSubmission(models.Model):
             if len(first_line.split(self.csv_separator))>2:
                 log.info('Got multiple separators on the first line. ',
                          extra={'jobid':jobid})
-                job_status.err['err'].append('too_many_seps')
-                job_status.rdy = True
-                job_status.save()
-                return
-
-            stream.seek(0)
+                raise TooManySeparatorsError
+            
             # Read using Pandas
+            stream.seek(0)
             colnames = ['submit_name', 'val']
-            self.parsed_data = pd.read_csv(stream, sep=self.csv_separator, names=colnames)
+            self.parsed_data = pd.read_csv(stream, sep=self.csv_separator,
+                                           names=colnames)
 
+            # Check size of the input
             if (len(self.parsed_data)>20000):
-                job_status.err['err'].append('too_many_entries')
                 log.info('Too many entries. Got '\
                          +str(len(self.parsed_data)), extra={'jobid':jobid})
-                job_status.rdy = True
-                job_status.save()
-                return
+                raise TooManyEntriesError
             elif (len(self.parsed_data)>3000) and (self.output_type=='graph'):
-                job_status.err['err'].append('too_many_entries_for_graph')
                 log.info('Too many entries for graph output. Got '\
                          +str(len(self.parsed_data)), extra={'jobid':jobid})
-                job_status.rdy = True
-                job_status.save()
-                return
+                raise TooManyEntriesGraphError
+
+            # Fix input
             self.parsed_data['submit_name'] = self.parsed_data['submit_name'].str.strip()
             self.parsed_data.fillna({'FC':0.0}, inplace=True)
-            s = resolve_genenames_df.signature(args=(self.parsed_data.to_json(), self.organism),
+
+            # Resolve gene IDs
+            s = resolve_genes.signature(args=(self.parsed_data.to_json(), self.organism),
                                                      kwargs={'jobid':jobid})
             r = process_signature(s)
             parsed_data = pd.read_json(r, dtype=_dtypes)
             self.parsed_data = parsed_data
-            #print('from run_pre_analysis', type(parsed_data.loc['Q16873', 'mgi_id']))
-            if self.parsed_data['identified'].sum() == 0.0:
-                job_status.err['err'].append('genes_not_recognized')
-                self.save()
-                job_status.rdy = True
-                log.info('W: None of the genes submitted identified', extra={'jobid':jobid})
-                job_status.save()
-                return
 
-            if self.bg_file:
-                if not self.bg_type == 'custom':
+            # Check any genes were identification
+            if self.parsed_data['identified'].sum() == 0.0:
+                log.info('W: None of the genes submitted identified', extra={'jobid':jobid})
+                raise GenesNotIdentifiedError
+
+            # Check background gene identifiers if uploaded
+            if self.analysis_type=='enrich' and self.bg_file:
+                if self.bg_type != 'custom': # check for weird input
                     log.warn('W: Background file submitted but bg_type is '\
                              +str(self.bg_type)+'. Proceeding as if bg_type was custom.',
                              extra={'jobid':jobid})
 
+                self.bg_genes = pd.read_csv(self.bg_file,
+                                   names=colnames)
+                s = resolve_genes.signature(args=(self.bg_genes.to_json(),
+                                                         self.organism),
+                                                   kwargs={'jobid':jobid})
+                bg_genes = pd.read_json(process_signature(s))
+                self.bg_genes = bg_genes
 
-                if self.analysis_type == 'enrich':
-                    self.bg_genes = pd.read_csv(self.bg_file,
-                                       names=colnames)
-                    s = resolve_genenames_df.signature(args=(self.bg_genes.to_json(),
-                                                             self.organism), kwargs={'jobid':jobid})
-                    bg_genes = pd.read_json(process_signature(s))
-                    self.bg_genes = bg_genes
-                    if self.bg_genes['identified'].sum() == 0.0:
-                        job_status.err['err'].append('genes_not_recognized')
-                        self.save()
-                        job_status.rdy = True
-                        job_status.save()
-                        log.info('None of the genes in background file identified',
-                                 extra={'jobid':jobid})
-                        return
-                else:
-                    log.warn('W: Background file submitted but analysis type is not "enrich"'\
-                             +' so skipping background file parsing.')
-            if self.slim=='custom':
-                if self.analysis_type == 'annot':
-                    self.parsed_custom_terms = pd.read_csv(io.StringIO(self.custom_terms),
-                                                           names=['termid'])
-                    invalid_term = []
-                    for t in self.parsed_custom_terms.itertuples():
-                        if not O.has_term(t.termid):
-                            invalid_term.append(True)
-                        else:
-                            invalid_term.append(False)
-                    self.parsed_custom_terms['invalid'] = invalid_term
-                    if sum(invalid_term)>0:
-                        self.save()
-                        job_status.err['err'].append('invalid_GO_terms')
-                        log.info('Invalid custom GO terms encountered', extra={'jobid':jobid})
-                        job_status.rdy = True
-                        job_status.save()
-                        return
-                else:
-                    log.warn('W: Custom GO terms submitted but analysis type is not "annot"'\
-                             +' so proceeding without custom terms parsing.')    
+                # Check if any genes in background were identified
+                if self.bg_genes['identified'].sum() == 0.0:
+                    log.info('None of the genes in background file identified',
+                             extra={'jobid':jobid})
+                    raise BgGenesNotIdentifiedError
+
+            # Check validity of custom GO terms if supplied
+            if self.analysis_type == 'annot' and self.slim=='custom':
+                self.parsed_custom_terms = pd.read_csv(io.StringIO(self.custom_terms),
+                                                       names=['termid'])
+                invalid_term = []
+                for t in self.parsed_custom_terms.itertuples():
+                    if not O.has_term(t.termid):
+                        invalid_term.append(True)
+                    else:
+                        invalid_term.append(False)
+                self.parsed_custom_terms['invalid'] = invalid_term
+                if sum(invalid_term)>0:
+                    log.info('Invalid custom GO terms encountered', extra={'jobid':jobid})
+                    raise InvalidGOTermError
+
             log.info('pre_analysis done', extra={'jobid':jobid})
-        except Exception as exc:
+
+        except InputValidationError as err:
+            tb = traceback.format_tb(err.__traceback__)
+            job_status.err[err.__class__.__name__] = tb
+            job_status.rdy = True
+            job_status.save()
+            self.save()
+            return
+
+        except Exception as err:
             if settings.TESTING:
-                raise exc
+                raise err
             else:
-                job_status.err['exc'].append({exc.__class__.__name__:
-                                              traceback.format_tb(exc.__traceback__)})
+                tb = traceback.format_tb(err.__traceback__)
+                job_status.err[err.__class__.__name__] = tb
                 job_status.rdy = True
                 job_status.save()
+                self.save()
+                log.error('Unhandeled exception during pre_analysis\n'+str(tb),
+                          extra={'jobid':jobid})
                 return
+
         self.run_analysis()
 
     @thread_func
@@ -273,21 +273,26 @@ class GOnetSubmission(models.Model):
                     self.get_annot_res_csv()
                 elif (self.output_type=="graph"):
                     s = build_slim_GOnet.signature(args=(self.parsed_data.to_json(),
-                                                               slim, self.namespace, self.organism),
-                                                         kwargs={'jobid':jobid})
+                                                         slim, self.namespace, self.organism),
+                                                   kwargs={'jobid':jobid})
                     self.network = process_signature(s)
             self.save()
             job_status.rdy = True
             job_status.save()
             log.info('run_analysis done', extra={'jobid':jobid})
-        except Exception as exc:
+        except Exception as err:
             if settings.TESTING:
-                raise exc
+                raise err
             else:
-                job_status.err['exc'].append({exc.__class__.__name__:
-                                              traceback.format_tb(exc.__traceback__)})
+                tb = traceback.format_tb(err.__traceback__)
+                job_status.err[err.__class__.__name__] = tb
                 job_status.rdy = True
                 job_status.save()
+                self.save()
+                log.error('Unhandeled exception during pre_analysis\n'+str(tb),
+                          extra={'jobid':jobid})
+
+                return
 
     def get_id_map(self):
         s = id_map_txt.signature(args=(self.parsed_data.to_json(),),
@@ -352,7 +357,8 @@ class GOnetSubmission(models.Model):
         self.save()
 
     def get_enrich_res_txt(self):
-        s = enrich_txt.signature(args=(self.parsed_data.to_json(), self.enrich_res_df.to_json(),
+        s = enrich_txt.signature(args=(self.parsed_data.to_json(),
+                                       self.enrich_res_df.to_json(),
                                        self.qvalue, self.organism),
                                 kwargs={'jobid':str(self.id)})
         r = process_signature(s)

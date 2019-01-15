@@ -189,7 +189,7 @@ def resolve_geneid(geneid, sp):
     return ret
 
 @celery_app.task
-def resolve_genenames_df(dfjs, sp='human', jobid=None):
+def resolve_genes(dfjs, sp='human', jobid=None):
     df = pd.read_json(dfjs, dtype=_dtypes)
     _df_d = defaultdict(dict)
     cnt = 0
@@ -218,12 +218,7 @@ def resolve_genenames_df(dfjs, sp='human', jobid=None):
         else:
             _df_d[gid]['duplicate_of'] = ''
     ret = pd.DataFrame.from_dict(_df_d, orient='index')
-    #print('from resolve_genenames_df', type(ret.loc['Q16873', 'mgi_id']))
     return ret.to_json()
-
-def _resolve_genenames_df(df, sp, jobid=None):
-    dfjs = df.to_json()
-    return pd.read_json(resolve_genenames_df(dfjs, sp, jobid=jobid), dtypes=_dtypes)
 
 @celery_app.task
 def id_map_txt(dfjs, sp='human', jobid=None):

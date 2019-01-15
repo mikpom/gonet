@@ -1,13 +1,8 @@
-import io
 from django.test import TransactionTestCase
 from django.test import Client
 from django import urls
 from pkg_resources import resource_filename as pkg_file
-import json
 from ..models import GOnetSubmission
-import numpy as np
-import pandas as pd
-from gonet import cyjs
 from . import job_req
 
 c = Client()
