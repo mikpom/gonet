@@ -11,15 +11,15 @@ from .geneid import _dtypes
 from gonet.clry import celery_app
 
 def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enrich_res_df=None):
+    pvals = {}
+    qvals = {}
+    tot_gn = {}
     if not enrich_res_df is None:
-        pvals = {}
-        qvals = {}
         for t in enrich_res_df.itertuples():
             pvals[t.term] = t.p
             qvals[t.term] = t.q
-    else:
-       pvals = None
-       qvals = None
+            tot_gn[t.term] = t.n
+
     for node in G.nodes:
         if node.startswith('GO:'): #Node is a GO term
             t = O.get_term(node)
@@ -35,6 +35,7 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
                     "shared_name" : str(node),
                     "nodetype" : "GOterm",
                     "genes_connected" : genes_connected,
+                    "tot_gn" : tot_gn[node] if tot_gn else len(O.G.node[node][sp]),
                     "xgenes" : xgenes,
                     "nodesymbol" : t.name,
                     "P" : pvals[node] if pvals else None,

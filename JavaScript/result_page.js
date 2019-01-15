@@ -324,6 +324,7 @@ function side_panel(cy) {
                 $('#infoTermID').html(goTermRefTemplate.replace("%TERMID", ndata.name)
                                       .replace("%LINKTEXT", ndata.name));
                 $('#infoTermDefinition').html(ndata.nodesymbol);
+                $('#infoTermTotalGenes').html(ndata.tot_gn);
                 if (analysisType=="enrich") {
                     $('#infoTermPval').html(ndata.P.toExponential(1));
                     $('#infoTermPvalAdj').html(ndata.Padj.toExponential(1));
@@ -333,6 +334,7 @@ function side_panel(cy) {
                         .replace('GENESYMBOL', cy.getElementById(g).data('nodesymbol'));
                 });
                 $('#infoTermXgenes').html(genePills.join(' '));
+                $('#infoTermNXgenes').html(ndata.xgenes.length);
             }
         }
         else if (evtTarget.group() == "edges") {
@@ -351,7 +353,7 @@ function side_panel(cy) {
                             return '<a href="http://www.informatics.jax.org/reference/summary?id='+subref.substr(4)+'">'+subref.substr(4)+"</a>";
                         }
                         else {
-                            return subref
+                            return subref;
                         }
                     });
                     return "<p class='my-0 small-font'>"+formattedSubRefs.join("|") +"</p>";

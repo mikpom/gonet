@@ -68,6 +68,7 @@ class DefaultTestCase(TransactionTestCase):
         n = list(filter(lambda n: n['data']['id']=='GO:0098532', net_dict['elements']['nodes']))[0]
         self.assertAlmostEqual(n['data']['P'], 8.57800000e-07)
         self.assertAlmostEqual(n['data']['Padj'], 0.0030845372)
+        self.assertEqual(n['data']['tot_gn'], 6)
 
         # Test resolved attribute
         n = list(filter(lambda e: e['data']['nodesymbol']=='LPPR2', net_dict['elements']['nodes']))[0]

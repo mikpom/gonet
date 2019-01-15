@@ -39,12 +39,13 @@ class GOnetAnnotTestCase(TransactionTestCase):
         resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
         self.assertEqual(resp.status_code, 200)
         sn = GOnetSubmission.objects.latest('submit_time')
-        G = cyjs.cyjs2nx(json.loads(sn.network))
+        net = json.loads(sn.network)
+        G = cyjs.cyjs2nx(net)
         self.assertTrue(G.has_edge('GO:0007165', 'P29376'))
 
         # Test recognition of user-supplied contrast values
         gene_nodes = filter(lambda n: not n['data']['name'].startswith('GO:'),
-                            json.loads(sn.network)['elements']['nodes'])
+                            net['elements']['nodes'])
         gene_nodes = list(gene_nodes)
         self.assertEqual(len(list(filter(lambda node: float(node['data']['expr:user_supplied'])>0,   gene_nodes))), \
                          np.sum(input_data_df[1]>0) - 1 ) #-1 for HIST1H2AM
@@ -135,6 +136,12 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         self.assertListEqual(list(G.predecessors('P29376')), ['GO:0071300'])
         self.assertListEqual(list(G.predecessors('Q5TBA9')), ['GO:0016043'])
         self.assertListEqual(list(G.predecessors('P16403')), ['GO:0065003'])
+
+        # Test node GO:0071300 (cellular response to retinoic acid)
+        n = list(filter(lambda n: n['data']['id']=='GO:0071300', net_dict['elements']['nodes']))[0]
+        self.assertEqual(n['data']['tot_gn'], 69)
+
+        
 
     # annotated vs terms enriched in genelist2.
     # graph should be consistent with enrichment results

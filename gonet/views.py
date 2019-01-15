@@ -18,7 +18,8 @@ def job_submission(request, *args, **kwargs):
         form = GOnetSubmitForm(request.POST)
         if form.is_valid():
             try:
-                sn = GOnetSubmission.create(form.cleaned_data, cli=request.META['REMOTE_ADDR'],
+                sn = GOnetSubmission.create(form.cleaned_data,
+                                            cli=request.META['REMOTE_ADDR'],
                                             genelist_file=request.FILES.get('uploaded_file', default=None),
                                             bg_file=request.FILES.get('bg_file', default=None))
             except DataNotProvidedError as e:
