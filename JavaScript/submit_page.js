@@ -2,7 +2,30 @@ var $ = require("jquery");
 require("expose-loader?$!jquery");
 require("expose-loader?jQuery!jquery");
 
-var sampdata = "ABCB1	0.6\nAK5	-0.54\nAMZ2P1	-0.65\nAPOBR	0.53\nBHLHE40	0.51\nCCDC75	0.52\nCCL20	0.53\nCCR7	-0.59\nCDCA7L	-0.69\nCDK11B	0.52\nCMIP	0.51\nDAB1	0.51\nDENND3	0.53\nEDAR	-0.51\nEGLN3	0.52\nERF	0.53\nESR2	0.56\nFKBP5	-0.69\nFLVCR1-AS1	-0.53\nFOXP4	0.53\nFRY	0.63\nGPA33	-0.77\nHAVCR2	-0.59\nHIST1H1B	0.7\nHIST1H1C	0.9\nHIST1H1D	0.74\nHIST1H1E	0.85\nHIST1H2AG	0.64\nHIST1H2AH	0.59\nHIST1H2AM	0.53\nHIST1H2BC	0.62\nHIST2H2AC	0.79\nHIST2H2BC	0.53\nIER5	0.54\nIFFO2	0.52\nJUN	0.65\nKIF5C	0.6\nKIT	0.57\nLOC100130992	0.55\nLOC387895	0.52\nLOC729041	0.59\nLPAR3	0.56\nLPPR2	0.51\nLTC4S	0.67\nLTK	0.81\nMACF1	0.5\nMARCH3	-0.6\nMMP25	0.52\nMYBL1	0.53\nNOG	-0.73\nPDE7B	-0.51\nPHGDH	-0.56\nPHLDA3	0.51\nPIK3IP1	-0.56\nPLCB1	0.5\nPLXNA3	0.55\nPTPN13	0.67\nPVRL3	0.64\nRHEBL1	0.52\nRPL19P12	0.55\nSLA	-0.5\nSMAD7	0.52\nST6GALNAC1	-0.55\nSYTL2	0.56\nTMOD2	0.6\nTXK	-0.52\nZNF225	-0.51\nZNF256	-0.51\nZNF618	-0.55\nZNF761	-0.53";
+var sampdata = ["ABCB1	0.6", "AK5	-0.54", "AMZ2P1	-0.65",
+                "APOBR	0.53", "BHLHE40	0.51", "CCDC75	0.52",
+                "CCL20	0.53", "CCR7	-0.59", "CDCA7L	-0.69",
+                "CDK11B	0.52", "CMIP	0.51", "DAB1	0.51",
+                "DENND3	0.53", "EDAR	-0.51", "EGLN3	0.52",
+                "ERF	0.53", "ESR2	0.56", "FKBP5	-0.69",
+                "FLVCR1-AS1	-0.53", "FOXP4	0.53", "FRY	0.63",
+                "GPA33	-0.77", "HAVCR2	-0.59", "HIST1H1B	0.7",
+                "HIST1H1C	0.9", "HIST1H1D	0.74", "HIST1H1E	0.85",
+                "HIST1H2AG	0.64", "HIST1H2AH	0.59", "HIST1H2AM	0.53",
+                "HIST1H2BC	0.62", "HIST2H2AC	0.79", "HIST2H2BC	0.53",
+                "IER5	0.54", "IFFO2	0.52", "JUN	0.65",
+                "KIF5C	0.6", "KIT	0.57", "LOC100130992	0.55",
+                "LOC387895	0.52", "LOC729041	0.59", "LPAR3	0.56",
+                "LPPR2	0.51", "LTC4S	0.67", "LTK	0.81",
+                "MACF1	0.5", "MARCH3	-0.6", "MMP25	0.52",
+                "MYBL1	0.53", "NOG	-0.73", "PDE7B	-0.51",
+                "PHGDH	-0.56", "PHLDA3	0.51", "PIK3IP1	-0.56",
+                "PLCB1	0.5", "PLXNA3	0.55", "PTPN13	0.67",
+                "PVRL3	0.64", "RHEBL1	0.52", "RPL19P12	0.55",
+                "SLA	-0.5", "SMAD7	0.52", "ST6GALNAC1	-0.55",
+                "SYTL2	0.56", "TMOD2	0.6", "TXK	-0.52",
+                "ZNF225	-0.51", "ZNF256	-0.51", "ZNF618	-0.55",
+                "ZNF761	-0.53"].join('\n');
 
 
 function updateAnalysisType() {
@@ -97,8 +120,16 @@ $(document).ready(function() {
     $("#organism").on("change", function() {
         updateOrganism();
     });
+
+    $("#reset-btn").click(function() {
+        $("#input-form").get(0).reset();
+        updateAnalysisType();
+        updateSlimType();
+        updateBgType();
+        updateOrganism();
+    });
     
-    var analysisType = updateAnalysisType();
+    updateAnalysisType();
     updateSlimType();
     updateBgType();
     updateOrganism();
