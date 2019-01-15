@@ -103,6 +103,7 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
                     },
                     "selected" : False
                 })
+    # Computationally expensive so only if less than 300 genes
     if len(gene_data) < 300:
         for edge, d in filter(lambda i: i[1]['data']['edgetype']=='go2gene', G.edges.items()):
             # find those 'specific_terms' pairs (having form (gene, term))

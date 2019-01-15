@@ -3,12 +3,14 @@ import uuid
 import io
 import time
 import logging
+import traceback
 import json
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 import pandas as pd
 from .exceptions import DataNotProvidedError, InputValidationError
-from .fields import DataFrameField
+from .fields import DataFrameField, JobErrorsField
 from .geneid import resolve_genenames_df, id_map_txt, _dtypes
 from .expression import hpa_data, dice_data, \
     bgee_data, celltype_choices
@@ -25,11 +27,10 @@ def _pprint_successors(ret, format_func, G, node, indent=1):
         ret.append(format_func(s, indent))
         _pprint_successors(ret, format_func, G, s, indent=indent+1)
 
-
 class GOnetJobStatus(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     rdy = models.BooleanField(default=True)
-    err = models.CharField(max_length=1000, default='')
+    err = JobErrorsField()
 
 class GOnetSubmission(models.Model):
     sep_choices = (('\t', '{tab}'), (',', '{,}'), ('\s+', 'Any whitespace'))
@@ -119,156 +120,174 @@ class GOnetSubmission(models.Model):
         jobid=str(self.id)
         log.info('Starting pre analysis...', extra={'jobid':jobid})
         job_status = GOnetJobStatus.objects.get(pk=self.id)
-        colnames = ['submit_name', 'val']
-        if (self.file_uploaded):
-            stream = self.uploaded_file
-        else:
-            stream = io.StringIO(self.paste_data)
+        try:
+            if (self.file_uploaded):
+                stream = self.uploaded_file
+                first_line = stream.readline().decode()
+            else:
+                stream = io.StringIO(self.paste_data)
+                first_line = stream.readline()
 
-        # Check for multiple separators
-        ln = stream.readline()
-        if len(ln.split(self.csv_separator))>2:
-            log.info('Got multiple separators on the first line. ',
-                     extra={'jobid':jobid})
-            job_status.err += ';too_many_seps'
-            job_status.rdy = True
-            job_status.save()
-            return
-
-        stream.seek(0)
-        # Read using Pandas
-        self.parsed_data = pd.read_csv(stream, sep=self.csv_separator, names=colnames)
-        
-        if (len(self.parsed_data)>20000):
-            job_status.err += ';too_many_entries'
-            log.info('Too many entries. Got '\
-                     +str(len(self.parsed_data)), extra={'jobid':jobid})
-            job_status.rdy = True
-            job_status.save()
-            return
-        elif (len(self.parsed_data)>3000) and (self.output_type=='graph'):
-            job_status.err += 'too_many_entries_for_graph'
-            log.info('Too many entries for graph output. Got '\
-                     +str(len(self.parsed_data)), extra={'jobid':jobid})
-            job_status.rdy = True
-            job_status.save()
-            return
-        self.parsed_data['submit_name'] = self.parsed_data['submit_name'].str.strip()
-        self.parsed_data.fillna({'FC':0.0}, inplace=True)
-        s = resolve_genenames_df.signature(args=(self.parsed_data.to_json(), self.organism),
-                                                 kwargs={'jobid':jobid})
-        r = process_signature(s)
-        parsed_data = pd.read_json(r, dtype=_dtypes)
-        self.parsed_data = parsed_data
-        #print('from run_pre_analysis', type(parsed_data.loc['Q16873', 'mgi_id']))
-        if self.parsed_data['identified'].sum() == 0.0:
-            job_status.err += 'genes_not_recognized'
-            self.save()
-            job_status.rdy = True
-            log.info('W: None of the genes submitted identified', extra={'jobid':jobid})
-            job_status.save()
-            return
-
-        if self.bg_file:
-            if not self.bg_type == 'custom':
-                log.warn('W: Background file submitted but bg_type is '\
-                         +str(self.bg_type)+'. Proceeding as if bg_type was custom.',
+            # Check for multiple separators
+            if len(first_line.split(self.csv_separator))>2:
+                log.info('Got multiple separators on the first line. ',
                          extra={'jobid':jobid})
+                job_status.err['err'].append('too_many_seps')
+                job_status.rdy = True
+                job_status.save()
+                return
 
-            
-            if self.analysis_type == 'enrich':
-                self.bg_genes = pd.read_csv(self.bg_file,
-                                   names=colnames)
-                s = resolve_genenames_df.signature(args=(self.bg_genes.to_json(),
-                                                         self.organism), kwargs={'jobid':jobid})
-                bg_genes = pd.read_json(process_signature(s))
-                self.bg_genes = bg_genes
-                if self.bg_genes['identified'].sum() == 0.0:
-                    job_status.err += 'genes_not_recognized'
-                    self.save()
-                    job_status.rdy = True
-                    job_status.save()
-                    log.info('None of the genes in background file identified',
+            stream.seek(0)
+            # Read using Pandas
+            colnames = ['submit_name', 'val']
+            self.parsed_data = pd.read_csv(stream, sep=self.csv_separator, names=colnames)
+
+            if (len(self.parsed_data)>20000):
+                job_status.err['err'].append('too_many_entries')
+                log.info('Too many entries. Got '\
+                         +str(len(self.parsed_data)), extra={'jobid':jobid})
+                job_status.rdy = True
+                job_status.save()
+                return
+            elif (len(self.parsed_data)>3000) and (self.output_type=='graph'):
+                job_status.err['err'].append('too_many_entries_for_graph')
+                log.info('Too many entries for graph output. Got '\
+                         +str(len(self.parsed_data)), extra={'jobid':jobid})
+                job_status.rdy = True
+                job_status.save()
+                return
+            self.parsed_data['submit_name'] = self.parsed_data['submit_name'].str.strip()
+            self.parsed_data.fillna({'FC':0.0}, inplace=True)
+            s = resolve_genenames_df.signature(args=(self.parsed_data.to_json(), self.organism),
+                                                     kwargs={'jobid':jobid})
+            r = process_signature(s)
+            parsed_data = pd.read_json(r, dtype=_dtypes)
+            self.parsed_data = parsed_data
+            #print('from run_pre_analysis', type(parsed_data.loc['Q16873', 'mgi_id']))
+            if self.parsed_data['identified'].sum() == 0.0:
+                job_status.err['err'].append('genes_not_recognized')
+                self.save()
+                job_status.rdy = True
+                log.info('W: None of the genes submitted identified', extra={'jobid':jobid})
+                job_status.save()
+                return
+
+            if self.bg_file:
+                if not self.bg_type == 'custom':
+                    log.warn('W: Background file submitted but bg_type is '\
+                             +str(self.bg_type)+'. Proceeding as if bg_type was custom.',
                              extra={'jobid':jobid})
-                    return
+
+
+                if self.analysis_type == 'enrich':
+                    self.bg_genes = pd.read_csv(self.bg_file,
+                                       names=colnames)
+                    s = resolve_genenames_df.signature(args=(self.bg_genes.to_json(),
+                                                             self.organism), kwargs={'jobid':jobid})
+                    bg_genes = pd.read_json(process_signature(s))
+                    self.bg_genes = bg_genes
+                    if self.bg_genes['identified'].sum() == 0.0:
+                        job_status.err['err'].append('genes_not_recognized')
+                        self.save()
+                        job_status.rdy = True
+                        job_status.save()
+                        log.info('None of the genes in background file identified',
+                                 extra={'jobid':jobid})
+                        return
+                else:
+                    log.warn('W: Background file submitted but analysis type is not "enrich"'\
+                             +' so skipping background file parsing.')
+            if self.slim=='custom':
+                if self.analysis_type == 'annot':
+                    self.parsed_custom_terms = pd.read_csv(io.StringIO(self.custom_terms),
+                                                           names=['termid'])
+                    invalid_term = []
+                    for t in self.parsed_custom_terms.itertuples():
+                        if not O.has_term(t.termid):
+                            invalid_term.append(True)
+                        else:
+                            invalid_term.append(False)
+                    self.parsed_custom_terms['invalid'] = invalid_term
+                    if sum(invalid_term)>0:
+                        self.save()
+                        job_status.err['err'].append('invalid_GO_terms')
+                        log.info('Invalid custom GO terms encountered', extra={'jobid':jobid})
+                        job_status.rdy = True
+                        job_status.save()
+                        return
+                else:
+                    log.warn('W: Custom GO terms submitted but analysis type is not "annot"'\
+                             +' so proceeding without custom terms parsing.')    
+            log.info('pre_analysis done', extra={'jobid':jobid})
+        except Exception as exc:
+            if settings.TESTING:
+                raise exc
             else:
-                log.warn('W: Background file submitted but analysis type is not "enrich"'\
-                         +' so skipping background file parsing.')
-        if self.slim=='custom':
-            if self.analysis_type == 'annot':
-                self.parsed_custom_terms = pd.read_csv(io.StringIO(self.custom_terms),
-                                                       names=['termid'])
-                invalid_term = []
-                for t in self.parsed_custom_terms.itertuples():
-                    if not O.has_term(t.termid):
-                        invalid_term.append(True)
-                    else:
-                        invalid_term.append(False)
-                self.parsed_custom_terms['invalid'] = invalid_term
-                if sum(invalid_term)>0:
-                    self.save()
-                    job_status.err += 'invalid_GO_terms'
-                    log.info('Invalid custom GO terms encountered', extra={'jobid':jobid})
-                    job_status.rdy = True
-                    job_status.save()
-                    return
-            else:
-                log.warn('W: Custom GO terms submitted but analysis type is not "annot"'\
-                         +' so proceeding without custom terms parsing.')    
-        log.info('pre_analysis done', extra={'jobid':jobid})
-        #print('from run_pre_analysis', type(self.parsed_data.loc['Q16873', 'mgi_id']))
+                job_status.err['exc'].append({exc.__class__.__name__:
+                                              traceback.format_tb(exc.__traceback__)})
+                job_status.rdy = True
+                job_status.save()
+                return
         self.run_analysis()
 
     @thread_func
     def run_analysis(self):
         jobid=str(self.id)
         log.info('Starting run_analysis...', extra={'jobid':jobid})
-        if self.analysis_type=='enrich':
-            args = (list(self.parsed_data.index), self.namespace,
-                    self.organism, self.bg_type)
-            if self.bg_type == 'all':
-                kwargs = {}
-            elif self.bg_type == 'custom':
-                kwargs = {'bg_genes':
-                          list(self.bg_genes.index.union(self.parsed_data.index)),
-                          'bg_id' : jobid}
-            elif self.bg_type == 'predef':
-                kwargs = {'bg_genes':self.bg_cell, 'bg_id' : jobid}
-            kwargs.update({'jobid':jobid})
-            s = compute_enrichment.signature(args=args, kwargs=kwargs)
-            self.enrich_res_df = pd.read_json(process_signature(s))\
-                                   .dropna().query('p<0.1')
-            if (self.output_type=="txt"):
-                self.get_enrich_res_txt()
-            elif (self.output_type=="csv"):
-                self.get_enrich_res_csv()
-            elif (self.output_type == "graph"):
-                #print('from run_analysis', type(self.parsed_data.loc['Q16873', 'mgi_id']))
-                args = (self.enrich_res_df.to_json(), self.qvalue,
-                        self.parsed_data.to_json(), self.namespace, self.organism)
-                s = build_enrich_GOnet.signature(args=args, kwargs={'jobid':jobid})
-                self.network = process_signature(s)
-        elif self.analysis_type=='annot':
-            if self.slim == 'custom':
-                slim = list(self.parsed_custom_terms['termid'])
-            else:
-                slim = self.slim
-                if slim == 'goslim_immunol':
-                    self.namespace = 'biological_process'
-            if (self.output_type=="txt"):
-                self.get_annot_res_txt()
-            elif (self.output_type=="csv"):
-                self.get_annot_res_csv()
-            elif (self.output_type=="graph"):
-                s = build_slim_GOnet.signature(args=(self.parsed_data.to_json(),
-                                                           slim, self.namespace, self.organism),
-                                                     kwargs={'jobid':jobid})
-                self.network = process_signature(s)
-        self.save()
         job_status = GOnetJobStatus.objects.get(pk=self.id)
-        job_status.rdy = True
-        job_status.save()
-        log.info('run_analysis done', extra={'jobid':jobid})
+        try:
+            if self.analysis_type=='enrich':
+                args = (list(self.parsed_data.index), self.namespace,
+                        self.organism, self.bg_type)
+                if self.bg_type == 'all':
+                    kwargs = {}
+                elif self.bg_type == 'custom':
+                    kwargs = {'bg_genes':
+                              list(self.bg_genes.index.union(self.parsed_data.index)),
+                              'bg_id' : jobid}
+                elif self.bg_type == 'predef':
+                    kwargs = {'bg_genes':self.bg_cell, 'bg_id' : jobid}
+                kwargs.update({'jobid':jobid})
+                s = compute_enrichment.signature(args=args, kwargs=kwargs)
+                self.enrich_res_df = pd.read_json(process_signature(s))\
+                                       .dropna().query('p<0.1')
+                if (self.output_type=="txt"):
+                    self.get_enrich_res_txt()
+                elif (self.output_type=="csv"):
+                    self.get_enrich_res_csv()
+                elif (self.output_type == "graph"):
+                    args = (self.enrich_res_df.to_json(), self.qvalue,
+                            self.parsed_data.to_json(), self.namespace, self.organism)
+                    s = build_enrich_GOnet.signature(args=args, kwargs={'jobid':jobid})
+                    self.network = process_signature(s)
+            elif self.analysis_type=='annot':
+                if self.slim == 'custom':
+                    slim = list(self.parsed_custom_terms['termid'])
+                else:
+                    slim = self.slim
+                    if slim == 'goslim_immunol':
+                        self.namespace = 'biological_process'
+                if (self.output_type=="txt"):
+                    self.get_annot_res_txt()
+                elif (self.output_type=="csv"):
+                    self.get_annot_res_csv()
+                elif (self.output_type=="graph"):
+                    s = build_slim_GOnet.signature(args=(self.parsed_data.to_json(),
+                                                               slim, self.namespace, self.organism),
+                                                         kwargs={'jobid':jobid})
+                    self.network = process_signature(s)
+            self.save()
+            job_status.rdy = True
+            job_status.save()
+            log.info('run_analysis done', extra={'jobid':jobid})
+        except Exception as exc:
+            if settings.TESTING:
+                raise exc
+            else:
+                job_status.err['exc'].append({exc.__class__.__name__:
+                                              traceback.format_tb(exc.__traceback__)})
+                job_status.rdy = True
+                job_status.save()
 
     def get_id_map(self):
         s = id_map_txt.signature(args=(self.parsed_data.to_json(),),

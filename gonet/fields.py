@@ -2,6 +2,7 @@
 from django.db import models
 import pandas as pd
 from pandas.compat import StringIO
+import json
 
 class DataFrameField(models.Field):
     """
@@ -34,3 +35,32 @@ class DataFrameField(models.Field):
 
     def get_default(self):
         return  pd.DataFrame()
+
+class JSONField(models.Field):
+    """
+    Implements JSON Field
+    """
+    def from_db_value(self, json_string, expression, connection, context):
+        if json_string is None:
+            return json_string
+        obj = json.loads(json_string)
+        return obj
+    
+    def to_python(self, value):
+        if value is None:
+            return value
+        obj = json.loads(json_string)
+        return obj
+
+    def get_prep_value(self, value):
+        return json.dumps(value)
+
+    def get_internal_type(self):
+        return "TextField"
+
+    def get_default(self):
+        return {}
+
+class JobErrorsField(JSONField):
+    def get_default(self):
+        return {'err':[], 'exc':[]}

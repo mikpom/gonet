@@ -25,7 +25,7 @@ def job_submission(request, *args, **kwargs):
                 sn = GOnetSubmission.create(form.cleaned_data, cli=request.META['REMOTE_ADDR'],
                                             genelist_file=request.FILES.get('uploaded_file', default=None),
                                             bg_file=request.FILES.get('bg_file', default=None))
-                job_status = GOnetJobStatus(id=sn.id, rdy=False, err='')
+                job_status = GOnetJobStatus(id=sn.id, rdy=False)
                 job_status.save()
                 sn.run_pre_analysis()
                 URL = urls.reverse('GOnet-check-analysis-progress', args=(str(sn.id), ))
@@ -39,10 +39,20 @@ def job_submission(request, *args, **kwargs):
                       extra={'jobid':'not_assigned'})
         return render(request, 'gonet/submit_page.html', {'form': form})
 
+    else:
+        log.error('Unknown request type: {:s}'.format(request.method))
+
 def check_analysis_progress(request, jobid):
     job_status = GOnetJobStatus.objects.get(pk=jobid)
     if job_status.rdy==True:
-        job_err = job_status.err.split(';')
+        job_err = job_status.err['err']
+        job_exc = job_status.err['exc']
+        if job_exc:
+            log.error('Errors raised while running the job: {:s}'.format(str(job_exc)),
+                      extra={'jobid':jobid})
+            return render(request, 'gonet/err/exception_cought.html',
+                          {'jobid':jobid})
+        
         if 'too_many_entries_for_graph' in job_err:
             return render(request, 'gonet/err/input_errors_page.html',
                           {'error': 'Lists with more than 3000 entries are '\
