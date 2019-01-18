@@ -5,6 +5,7 @@ from django import urls
 from pkg_resources import resource_filename as pkg_file
 import json
 from ..models import GOnetSubmission
+from ..ontol import O
 import numpy as np
 import pandas as pd
 from gonet import cyjs
@@ -139,8 +140,7 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
 
         # Test node GO:0071300 (cellular response to retinoic acid)
         n = list(filter(lambda n: n['data']['id']=='GO:0071300', net_dict['elements']['nodes']))[0]
-        self.assertEqual(n['data']['tot_gn'], 69)
-
+        self.assertEqual(n['data']['tot_gn'], len(O.get_attr('GO:0071300', 'human')))
         
 
     # annotated vs terms enriched in genelist2.

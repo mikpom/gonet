@@ -236,14 +236,16 @@ class GOnetSubmission(models.Model):
         log.info('Starting run_analysis...', extra={'jobid':jobid})
         job_status = GOnetJobStatus.objects.get(pk=self.id)
         try:
+            dat = self.parsed_data
             if self.analysis_type=='enrich':
-                args = (list(self.parsed_data.index), self.namespace,
+                gn = dat[(dat.duplicate_of=='')&(dat.identified)].index
+                args = (gn, self.namespace,
                         self.organism, self.bg_type)
                 if self.bg_type == 'all':
                     kwargs = {}
                 elif self.bg_type == 'custom':
                     kwargs = {'bg_genes':
-                              list(self.bg_genes.index.union(self.parsed_data.index)),
+                              list(self.bg_genes.index.union(dat.index)),
                               'bg_id' : jobid}
                 elif self.bg_type == 'predef':
                     kwargs = {'bg_genes':self.bg_cell, 'bg_id' : jobid}
@@ -257,7 +259,7 @@ class GOnetSubmission(models.Model):
                     self.get_enrich_res_csv()
                 elif (self.output_type == "graph"):
                     args = (self.enrich_res_df.to_json(), self.qvalue,
-                            self.parsed_data.to_json(), self.namespace, self.organism)
+                            dat.to_json(), self.namespace, self.organism)
                     s = build_enrich_GOnet.signature(args=args, kwargs={'jobid':jobid})
                     self.network = process_signature(s)
             elif self.analysis_type=='annot':
@@ -272,7 +274,7 @@ class GOnetSubmission(models.Model):
                 elif (self.output_type=="csv"):
                     self.get_annot_res_csv()
                 elif (self.output_type=="graph"):
-                    s = build_slim_GOnet.signature(args=(self.parsed_data.to_json(),
+                    s = build_slim_GOnet.signature(args=(dat.to_json(),
                                                          slim, self.namespace, self.organism),
                                                    kwargs={'jobid':jobid})
                     self.network = process_signature(s)
