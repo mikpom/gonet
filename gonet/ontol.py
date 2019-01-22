@@ -10,6 +10,7 @@ import genontol
 from genontol.read import goa as read_goa
 from genontol.ontol import GOntology
 
+
 # Slims
 def read_slim(filename, sep = '\t', skip_header=0, comment='#'):
     ret = []
@@ -22,6 +23,8 @@ def read_slim(filename, sep = '\t', skip_header=0, comment='#'):
             splitted = line.split(sep, 1)
             ret.append(splitted[0].rstrip())
     return ret
+
+print('Start reading ontology files...', end='', flush=True)
 goslim_immunol = read_slim(pkg_file(__name__, 'data/GO/goslim_immunology.lst'), sep='\t')
 goslim_generic = GOntology.from_obo(pkg_file(__name__, 'data/GO/goslim_generic.obo.gz'))
 
@@ -32,6 +35,7 @@ gaf_ids = {}
 # Dictionary mapping primary ID to GO terms
 # structure is sp -> ID -> {set of GO terms}
 id2go = {sp:defaultdict(set) for sp in ('human', 'mouse')}
+
 for sp, gaf_file in [('human', 'goa_human.gaf.gz'),
                      ('mouse', 'gene_association.mgi.gz')]:
     gaf_file = pkg_file(__name__, 'data/GO/'+gaf_file)
@@ -61,17 +65,17 @@ for term in O.all_terms():
     for sp in ('human', 'mouse'):
         for gene in O.get_attr(term, sp):
             gene2allterms[sp][gene].add(term)
-
+print('done', flush=True)
 
 @celery_app.task
 def compute_enrichment(genes, namespace, sp, bg_type, jobid=None, 
                        bg_genes=None, bg_id=None, min_category_size=2,
                        max_category_size=10000, max_category_depth=10):
-    
+
     kwargs = { 'max_category_size':max_category_size,
                'max_category_depth':max_category_depth,
                'min_category_size':min_category_size }
-    
+
     if bg_type == 'all':
          res = O.get_enrichment(genes, sp, namespace, **kwargs)
     else:

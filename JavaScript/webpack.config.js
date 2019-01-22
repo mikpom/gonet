@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 var parseArgs = require('minimist');
-// const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 new webpack.ProvidePlugin({
@@ -18,7 +17,7 @@ var conf = [
             path: path.resolve(__dirname, '../static/JavaScript/bundles'),
             filename: 'GOnet_result_page.bundle.js'
         },
-        resolve: {modules:["/home/pommy/Dropbox/src/JS", "node_modules"]},
+        resolve: {modules:["node_modules", path.resolve(__dirname), path.resolve(__dirname, 'node_modules')]},
         module: {
             rules: [
                 {

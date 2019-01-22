@@ -7,10 +7,10 @@ import pandas as pd
 from .clry import celery_app
 from .utils import to_dict_of_lists
 
+print('Start reading gene mapping files...', end='', flush=True)
 ######################
 # Reading Uniprot data
 ######################
-# Uniprot to Ensembl conversion data
 uni2ens, ens2uni = ({}, {})
 for sp, fl in (('human', 'HUMAN_9606_idmapping.dat.EnsemblIDs.gz'),
                ('mouse', 'MOUSE_10090_idmapping.dat.EnsemblIDs.gz')):
@@ -39,7 +39,7 @@ for tp in mgi_uni.itertuples():
     mgi2uni[tp.mgi_id] = set(uniprotids)
     for uid in uniprotids:
         uni2mgi[uid].add(tp.mgi_id)
-    
+
 # Init Swissprot data and load Mouse
 # Human is read later
 swissprot = {'human':set(), 'mouse':set()}
@@ -96,7 +96,7 @@ for v in human_nm.itertuples():
     id2desc['human'][v.uniprotid] = _parse_protname(v.prot_name)
     if not pd.isnull(v.primname):
         # e.g. HIST1H2AG; HIST1H2AI; HIST1H2AK; HIST1H2AL; HIST1H2AM ...
-        for nm in re.split(r'[; ]+', v.primname):
+        for nm in v.primname.split('; '):
             primname2id['human'][nm].add(v.uniprotid)
             # Adding this Uniprot ID to ad-hoc dictionary
             uniprot_ids2['human'].add(v.uniprotid)
@@ -110,9 +110,11 @@ for t in mouse_nm.itertuples():
     primname2id['mouse'][t.symbol].add(t.mgi_id)
     if t.synonym != 'null':
         synonyms = t.synonym.split('|')
-        for s in set(synonyms):
+        for s in synonyms:
             syn2id['mouse'][s].add(t.mgi_id)
     id2desc['mouse'][t.mgi_id] = t.name
+
+print('done', flush=True)    
 
 ##################################
 # Functions for resolving gene IDs
@@ -182,7 +184,7 @@ def resolve_geneid(geneid, sp):
         elif synonyms and len(synonyms) > 0:
             prim_id = synonyms[0]
             ret['identified'] = True
-        
+
     # If we have primary ID then look for other IDs
     if ret['identified']:
         ret['ensembl_id'] = _get_ensembl_ids(prim_id, sp=sp)
@@ -222,7 +224,7 @@ def resolve_genes(dfjs, sp='human', jobid=None):
         _df_d[gid].update(d)
         _df_d[gid]['val'] = val
         _df_d[gid]['submit_name'] = genename
-        
+
     for gid in _df_d:
         if gid in duplicates:
             _df_d[gid]['duplicate_of'] = duplicates[gid]

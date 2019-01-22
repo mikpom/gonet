@@ -105,8 +105,6 @@ secrets.json
 JavaScript/node_modules/*
 \#*\#
 .\#*
-gonet/data/pickles/*
-!gonet/data/pickles/.gitkeep
 gonet_data/
 gonet/migrations/*
 !gonet/migrations/__init__.py
