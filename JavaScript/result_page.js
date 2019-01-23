@@ -246,6 +246,7 @@ var contextMenuOptions = {
 function populateGeneInfo(geneId) {
     var ndata = cy.getElementById(geneId).data();
     $('#infoGeneName').html(ndata.nodesymbol);
+    $('#infoGenePrefName').html(ndata.primname);
     $('#infoDef').html(ndata.desc);
     if (ndata.uniprot_id) {
         $('#uniprotLink').html(ndata.uniprot_id);

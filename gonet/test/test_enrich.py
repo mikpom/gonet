@@ -76,6 +76,7 @@ class DefaultTestCase(TransactionTestCase):
         self.assertEqual(n['data']['uniprot_id'], 'Q96GM1')
         self.assertEqual(n['data']['ensembl_id'], 'ENSG00000105520')
         self.assertEqual(n['data']['desc'], 'Phospholipid phosphatase-related protein type 2')
+        self.assertEqual(n['data']['primname'], 'PLPPR2')
 
         n = list(filter(lambda e: e['data']['nodesymbol']=='LTC4S', net_dict['elements']['nodes']))[0]
         self.assertEqual(n['data']['uniprot_id'], 'Q16873')
@@ -98,6 +99,7 @@ class DefaultTestCase(TransactionTestCase):
         b = io.StringIO(); b.write(idmap_resp.content.decode()); b.seek(0)
         res = pd.read_csv(b, sep='\t', index_col=0)
         self.assertEqual(res.loc['HIST1H2AM', 'Notes'], 'same as HIST1H2AG')
+        self.assertEqual(res.loc['LPPR2', 'Preferred_name'], 'PLPPR2')
 
     def test_uploading_file(self):
         with open(pkg_file(__name__, 'data/genelist2.tsv'), 'r') as fh:

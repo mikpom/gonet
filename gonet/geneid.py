@@ -76,6 +76,7 @@ def _parse_protname(s):
 syn2id  = {sp:defaultdict(set) for sp in ('human', 'mouse')}
 # dictionary mapping primary name to primary IDs
 primname2id = {sp:defaultdict(set) for sp in ('human', 'mouse')}
+id2primname = {sp:{} for sp in ('human', 'mouse')}
 # dictionary mapping Primary ID to description
 id2desc = {sp:{} for sp in ('human', 'mouse')}
 
@@ -96,8 +97,10 @@ for v in human_nm.itertuples():
     id2desc['human'][v.uniprotid] = _parse_protname(v.prot_name)
     if not pd.isnull(v.primname):
         # e.g. HIST1H2AG; HIST1H2AI; HIST1H2AK; HIST1H2AL; HIST1H2AM ...
-        for nm in v.primname.split('; '):
+        for ind, nm in enumerate(v.primname.split('; ')):
             primname2id['human'][nm].add(v.uniprotid)
+            if ind == 0:
+                id2primname['human'][v.uniprotid] = nm
             # Adding this Uniprot ID to ad-hoc dictionary
             uniprot_ids2['human'].add(v.uniprotid)
 
@@ -105,6 +108,8 @@ mouse_nm = pd.read_csv(pkg_file('gonet', 'data/genes/MRK_List2.rpt.gz'), sep='\t
                              usecols=(0,6,8,11), names=['mgi_id','symbol','name','synonym'],
                              skiprows=[0])
 mouse_nm.fillna('null', inplace=True)
+id2primname['mouse'] = mouse_nm[['mgi_id','symbol']].set_index('mgi_id')['symbol']\
+                                                          .to_dict()
 
 for t in mouse_nm.itertuples():
     primname2id['mouse'][t.symbol].add(t.mgi_id)
@@ -120,7 +125,8 @@ print('done', flush=True)
 # Functions for resolving gene IDs
 ##################################
 _defaults = {'gn_in_swp' : 0, 'identified' : False, 'prim_ids':0,
-             'syn_in_swp' : 0, 'submit_name':'', 'ensembl_id':None,
+             'syn_in_swp' : 0, 'submit_name':'', 'pref_name':'',
+             'ensembl_id':None,
              'uniprot_id':None, 'mgi_id' : None, 'desc':None}
 
 _dtypes = {'gn_in_swp' : np.int8, 'identified' : np.bool_,
@@ -188,6 +194,7 @@ def resolve_geneid(geneid, sp):
     # If we have primary ID then look for other IDs
     if ret['identified']:
         ret['ensembl_id'] = _get_ensembl_ids(prim_id, sp=sp)
+        ret['primname'] = id2primname[sp][prim_id]
         if sp=='mouse':
             if not ret['uniprot_id']:
                 try:
@@ -238,9 +245,9 @@ def id_map_txt(dfjs, sp='human', jobid=None):
     df = pd.read_json(dfjs)
     df.sort_values('submit_name', inplace=True)
     if sp=='human':
-        txt = 'genename\tUniprot_ID\tEnsembl_ID\tDescription\tNotes\n'
+        txt = 'Name\tPreferred_name\tUniprot_ID\tEnsembl_ID\tDescription\tNotes\n'
     elif sp=='mouse':
-        txt = 'genename\tMGI_ID\tUniprot_ID\tEnsembl_ID\tDescription\tNotes\n'
+        txt = 'Name\tPreferred_name\tMGI_ID\tUniprot_ID\tEnsembl_ID\tDescription\tNotes\n'
     for t in df.itertuples():
         warn = []
         if t.duplicate_of != '':
@@ -251,11 +258,11 @@ def id_map_txt(dfjs, sp='human', jobid=None):
             warn.append('not recognized')
         notes = '; '.join(warn)
         if sp=='human':
-            txt += '\t'.join(map(str, [t.submit_name, t.uniprot_id,
+            txt += '\t'.join(map(str, [t.submit_name, t.primname, t.uniprot_id,
                                        t.ensembl_id, t.desc, notes]))+'\n'
         elif sp=='mouse':
-            txt += '\t'.join(map(str, [t.submit_name, t.mgi_id, t.uniprot_id,
-                                       t.ensembl_id, t.desc, notes]))+'\n'
+            txt += '\t'.join(map(str, [t.submit_name, t.primname, t.mgi_id,
+                                       t.uniprot_id, t.ensembl_id, t.desc, notes]))+'\n'
     return txt
 
 reg_chr = list(map(str, range(22))) + ['X', 'Y', 'MT']
