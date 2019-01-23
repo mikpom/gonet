@@ -1,0 +1,19 @@
+{
+  "name": "gonetutils",
+  "version": "1.0.0",
+  "description": "Misc utilities for GOnet app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mikpom",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "cytoscape": "^3.2.12",
+    "cytoscape-dagre": "^2.2.1",
+    "cytoscape-euler": "^1.2.1",
+    "mocha": "^5.2.0"
+  }
+}
