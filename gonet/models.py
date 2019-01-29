@@ -66,8 +66,9 @@ class GOnetSubmission(models.Model):
     organism = models.CharField(max_length=10, default='human', choices=organism_choices)
     qvalue = models.FloatField(default=0.05)
     network = models.TextField(default='{}', blank=True)
+    # namespace is not required because of annot analysis with custom terms
     namespace = models.CharField(max_length=20, default='biological_process',
-                                 choices=namespace_choices)
+                                 choices=namespace_choices, blank=True) 
     analysis_type = models.CharField(max_length=12, default='enrich',
                                      choices=analysis_choices)
     output_type = models.CharField(max_length=12, default='graph',

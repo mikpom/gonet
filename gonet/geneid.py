@@ -11,7 +11,7 @@ print('Start reading gene mapping files...', end='', flush=True)
 ######################
 # Reading Uniprot data
 ######################
-uni2ens, ens2uni = ({}, {})
+uni2ens= {}
 for sp, fl in (('human', 'HUMAN_9606_idmapping.dat.EnsemblIDs.gz'),
                ('mouse', 'MOUSE_10090_idmapping.dat.EnsemblIDs.gz')):
     fl = pkg_file(__name__, 'data/genes/'+fl)
