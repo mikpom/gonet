@@ -8,6 +8,7 @@ import json
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+import numpy as np
 import pandas as pd
 from .exceptions import *
 from .fields import DataFrameField, JSONField
@@ -143,7 +144,8 @@ class GOnetSubmission(models.Model):
             stream.seek(0)
             colnames = ['submit_name', 'val']
             self.parsed_data = pd.read_csv(stream, sep=self.csv_separator,
-                                           names=colnames)
+                                           names=colnames,
+                                           converters={'submit_name':np.str_})
 
             # Check size of the input
             if (len(self.parsed_data)>20000):

@@ -92,4 +92,12 @@ class WeirdInputTestCase(TransactionTestCase):
         sn = GOnetSubmission.objects.latest('submit_time')
         gn = sn.parsed_data
         self.assertIn('Humanized', list(gn.submit_name))
+
+    def test_numbers_only_input(self):
+        input_str = '5443\r\n5743\r\n627\r\n6323\r\n7124'
+        req = dict(job_req, **{'paste_data':input_str, 'analysis_type':'annot',
+                                   'slim':'goslim_generic', 'organism':'human'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'None of the genes submitted')
         
