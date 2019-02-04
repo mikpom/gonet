@@ -77,3 +77,19 @@ class WeirdInputTestCase(TransactionTestCase):
         resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
         self.assertContains(resp, 'Maximum number of entries is 20000.')
 
+    def test_multiword_header_whitespace_delim(self):
+        input_str = '\n'.join(['Humanized 9035 Mouse Gene Symbol', 'SPINK1', 'EPCAM'])
+        req = dict(job_req, **{'paste_data':input_str, 'csv_separator':'\s+',
+                               'analysis_type':'annot', 'slim':'goslim_generic'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        self.assertContains(resp, 'Multiple separators detected')
+
+    def test_multiword_line_whitespace_delim(self):
+        input_str = '\n'.join(['SPINK1', 'Humanized 9035 Mouse Gene Symbol', 'EPCAM'])
+        req = dict(job_req, **{'paste_data':input_str, 'csv_separator':'\s+',
+                               'analysis_type':'annot', 'slim':'goslim_generic'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+        gn = sn.parsed_data
+        self.assertIn('Humanized', list(gn.submit_name))
+        

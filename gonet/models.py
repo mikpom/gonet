@@ -1,6 +1,7 @@
 import os
 import uuid
 import io
+import re
 import logging
 import traceback
 import json
@@ -133,11 +134,11 @@ class GOnetSubmission(models.Model):
                 first_line = stream.readline()
 
             # Check for multiple separators
-            if len(first_line.split(self.csv_separator))>2:
+            if len(re.split(self.csv_separator, first_line))>2:
                 log.info('Got multiple separators on the first line. ',
                          extra={'jobid':jobid})
                 raise TooManySeparatorsError
-            
+
             # Read using Pandas
             stream.seek(0)
             colnames = ['submit_name', 'val']

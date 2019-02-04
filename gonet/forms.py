@@ -11,6 +11,9 @@ class GOnetSubmitForm(ModelForm):
     organism = ChoiceField(widget=RadioSelect, required=True,
                            choices=GOnetSubmission.organism_choices,
                            initial='human')
+    namespace = ChoiceField(widget=select_widget, required=False,
+                           choices=GOnetSubmission.namespace_choices,
+                           initial='biological_process')
     analysis_type = ChoiceField(widget=RadioSelect, required=True,
                            choices=GOnetSubmission.analysis_choices,
                            initial='enrich')
@@ -28,7 +31,7 @@ class GOnetSubmitForm(ModelForm):
     
     class Meta:
         model = GOnetSubmission
-        fields = ['job_name', 'uploaded_file', 'paste_data', 'namespace',
+        fields = ['job_name', 'uploaded_file', 'paste_data', 
                   'output_type', 'slim', 'csv_separator',
                   'bg_file']
 
