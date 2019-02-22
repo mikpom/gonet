@@ -101,3 +101,17 @@ class WeirdInputTestCase(TransactionTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'None of the genes submitted')
         
+    def test_integer_contrast_value(self):
+        input_str = '1700094D03Rik	73545\n'
+        req = dict(job_req, **{'paste_data':input_str, 'organism':'mouse'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_integer_contrast_value_any_whitespace(self):
+        input_str = '1700094D03Rik	73545\nABC1	120\n'
+        req = dict(job_req, **{'paste_data':input_str, 'organism':'mouse',
+                               'csv_separator':'\s+'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+        gn = sn.parsed_data
+        self.assertEqual(gn.shape[0], 2)

@@ -129,10 +129,10 @@ class GOnetSubmission(models.Model):
         try:
             if (self.file_uploaded):
                 stream = self.uploaded_file
-                first_line = stream.readline().decode()
+                first_line = stream.readline().decode().strip('\r\n')
             else:
                 stream = io.StringIO(self.paste_data)
-                first_line = stream.readline()
+                first_line = stream.readline().strip('\r\n')
 
             # Check for multiple separators
             if len(re.split(self.csv_separator, first_line))>2:
@@ -143,9 +143,11 @@ class GOnetSubmission(models.Model):
             # Read using Pandas
             stream.seek(0)
             colnames = ['submit_name', 'val']
+            convert_val = lambda v: np.float_(v) if v else np.nan
             self.parsed_data = pd.read_csv(stream, sep=self.csv_separator,
                                            names=colnames,
-                                           converters={'submit_name':np.str_})
+                                           converters={'submit_name':np.str_,
+                                                       'val': convert_val})
 
             # Check size of the input
             if (len(self.parsed_data)>20000):

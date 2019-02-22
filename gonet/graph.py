@@ -146,9 +146,8 @@ def induced_connected_subgraph(G, nodes):
 
 @celery_app.task
 def build_enrich_GOnet(enrich_res_df, qvalue, parsed_data, namespace, sp='human', jobid=None):
-    df = pd.read_json(enrich_res_df)
+    df = pd.read_json(enrich_res_df, dtype=_dtypes)
     parsed_data = pd.read_json(parsed_data, dtype=_dtypes)
-    #print('from build_enrich_GOnet', type(parsed_data.iloc['Q16873', 'mgi_id']))
     # Don't consider duplicates
     parsed_data = parsed_data[parsed_data['duplicate_of']=='']
     enrichterms = list(set(df[df['q']<qvalue]['term']))
@@ -164,6 +163,8 @@ def build_enrich_GOnet(enrich_res_df, qvalue, parsed_data, namespace, sp='human'
                 netG.add_edge(term, gene_id)
     G = add_net_data(netG, parsed_data, namespace, sp,
                      enrich_res_df=df)
+    d = cyjs.nx2cyjs(G)
+    
     return json.dumps(cyjs.nx2cyjs(G))
 
 @celery_app.task

@@ -133,7 +133,7 @@ _dtypes = {'gn_in_swp' : np.int8, 'identified' : np.bool_,
            'prim_ids':np.int8, 'syn_in_swp' : np.int8,
            'submit_name':'object', 'ensembl_id':'object',
            'uniprot_id':'object', 'mgi_id' : 'object', 'desc':'object',
-           'FC':np.float_}
+           'val':np.float_}
 
 def resolve_geneid(geneid, sp):
     ret = {k:v for k,v in _defaults.items()}

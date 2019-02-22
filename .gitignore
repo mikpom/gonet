@@ -108,3 +108,6 @@ JavaScript/node_modules/*
 gonet_data/
 gonet/migrations/*
 !gonet/migrations/__init__.py
+
+#profiler stuff
+manage.py.lprof
