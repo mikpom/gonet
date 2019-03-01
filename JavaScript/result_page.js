@@ -348,10 +348,10 @@ function side_panel(cy) {
                 var formattedRefs = specificTerms[specificTerm]['refs'].map(function(ref) {
                     var formattedSubRefs = ref.split("|").map(function(subref) {
                         if (subref.startsWith('PMID')) {
-                            return "<a href=https://www.ncbi.nlm.nih.gov/pubmed/"+subref.substr(5)+">"+subref+"</a>";
+                            return pubmedLinkRefTemplate.replace('%PMID', subref.substr(5)).replace('%LINKTEXT', subref);
                         }
                         else if (subref.startsWith("MGI")) {
-                            return '<a href="http://www.informatics.jax.org/reference/summary?id='+subref.substr(4)+'">'+subref.substr(4)+"</a>";
+                            return mgiLinkRefTemplate.replace('%MGIID', subref.substr(4)).replace('%LINKTEXT', subref.substr(4));
                         }
                         else {
                             return subref;

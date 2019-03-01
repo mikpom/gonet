@@ -17,6 +17,8 @@
     <script>var exprURL = "{{expr_url_base}}"</script>
     <script>var genePillTemplate = '<a href="#" class="badge badge-primary genePill" id="gGENEID">GENESYMBOL</a>'</script>
     <script>var goTermRefTemplate = '<a target="_blank" rel="noopener noreferrer" href="http://amigo.geneontology.org/amigo/term/%TERMID/">%LINKTEXT</a>'</script>
+    <script>var pubmedLinkRefTemplate = '<a href=https://www.ncbi.nlm.nih.gov/pubmed/%PMID target="_blank">%LINKTEXT</a>'</script>
+    <script>var mgiLinkRefTemplate = '<a href=http://www.informatics.jax.org/reference/summary?id=%MGIID target="_blank">%LINKTEXT</a>'</script>
     <link href="{% static "css/cytoscape-context-menus.css" %}" rel="stylesheet" type="text/css" />
     <script src="{% static "JavaScript/bundles/GOnet_result_page.bundle.js" %}" type="text/javascript"></script>
     <style>
