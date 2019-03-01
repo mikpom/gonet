@@ -408,47 +408,45 @@ function toggleShowGeneNodes() {
     }
 }
 
-function _colorGenesAttr(attr, logscale) {
+function _colorGenesUserSupplied() {
     var stile = cy.style();
-    var t;
-    var t_1;
-    var minExprValue, maxExprValue;
-    if (logscale==true) {
-        t = function(val){return Math.log10(val)};
-        t_1 = function(val){return Math.pow(10, val)};
+    var minExprValue = cy.nodes("[nodetype='gene']").min(function(n){return n.data('expr:user_supplied');}).value;
+    var maxExprValue = cy.nodes("[nodetype='gene']").max(function(n){return n.data('expr:user_supplied');}).value;
+    var midExprValue;
+    if ((minExprValue * maxExprValue) < 0) {
+        maxExprValue = Math.max(Math.abs(minExprValue, maxExprValue));
+        minExprValue = -maxExprValue;
+        midExprValue = 0.0;
     }
     else {
-        t = t_1 = function(val){return val};
+        midExprValue = minExprValue + (maxExprValue - minExprValue)*0.5;
     }
-    if (logscale == true) {
-        minExprValue = cy.nodes("[nodetype='gene']").filter(function(n){return n.data(attr)>0;})
-            .min(function(n){return n.data(attr);}).value;
-        maxExprValue = cy.nodes("[nodetype='gene']").filter(function(n){return n.data(attr)>0;})
-            .max(function(n){return n.data(attr);}).value;
-    }
-    else {
-        minExprValue = cy.nodes("[nodetype='gene']")
-            .min(function(n){return n.data(attr);}).value;
-        maxExprValue = cy.nodes("[nodetype='gene']")
-            .max(function(n){return n.data(attr);}).value;
-        if ((minExprValue * maxExprValue) < 0) {
-            maxExprValue = Math.max(Math.abs(minExprValue, maxExprValue));
-            minExprValue = -maxExprValue;
-        }
-    }
-    var geneColorScale = scaleSequential(interpolateRdYlBu)
-        .domain([t(maxExprValue), t(minExprValue)]);
-    geneColorScale.minExprValue = minExprValue;
-    geneColorScale.maxExprValue = maxExprValue;
-    geneColorScale.midExprValue = t_1((t(maxExprValue)+t(minExprValue))*0.5);
-    currentGeneColorScale = geneColorScale;
+    var geneColorScale = scaleSequential(interpolateRdYlBu).domain([maxExprValue, minExprValue]);
     cy.nodes("[nodetype='gene']").forEach(function (n) {
-        var e = n.data(attr);
+        var e = n.data('expr:user_supplied');
         if (isNaN(e)) {
             stile.selector('#'+n.id().replace(':', '\\:')+':unselected').style("background-color", 'rgb(255,255,255)');
         }
         else {
-            stile.selector('#'+n.id().replace(':', '\\:')+':unselected').style("background-color", geneColorScale(t(e)));
+            stile.selector('#'+n.id().replace(':', '\\:')+':unselected').style("background-color", geneColorScale(e));
+        }
+    });
+    stile.update();
+    return {'min':minExprValue, 'mid':midExprValue, 'max':maxExprValue};
+}
+
+function _colorGenesExpr(ctp) {
+    var stile = cy.style();
+    var t = function(val){return Math.log10(val);};
+    var t_1 = function(val){return Math.pow(10, val);};
+    var geneColorScale = scaleSequential(interpolateRdYlBu).domain([t(100), t(0.8)]);
+    cy.nodes("[nodetype='gene']").forEach(function (n) {
+        var e = n.data('expr:'+ctp);
+        if (isNaN(e)) {
+            stile.selector('#'+n.id().replace(':', '\\:')+':unselected').style("background-color", 'rgb(255,255,255)');
+        }
+        else {
+            stile.selector('#'+n.id().replace(':', '\\:')+':unselected').style("background-color", geneColorScale(t(Math.max(e, 1.0))));
         }
     });
     stile.update();
@@ -460,37 +458,33 @@ function colorGenesBy(colorOpt, callback) {
         stile.selector('node[nodetype="gene"]:unselected').style("background-color", '#f2a57b');
         stile.update();
         if (callback) {
-            callback()
+            callback();
         }
     }
-    else if (colorOpt != 'default') {
-        var attr = "expr:"+colorOpt;
-        if (colorOpt!="user_supplied") {
-            $.getJSON(exprURL+colorOpt+'?callback=?', function(data) {
-                cy.nodes("[nodetype='gene']").forEach(function(n){
-                    n.data(attr, data[n.id()]);
-                });
-                _colorGenesAttr(attr, true);
-                colorbar(currentGeneColorScale);
-                if (callback){
-                    callback();
-                }
-            });
+    else if (colorOpt == 'user_supplied') {
+        var margins = _colorGenesUserSupplied();
+        colorbar(margins['min'], margins['mid'], margins['max']);
+        if (callback){
+            callback();
         }
-        else if (colorOpt == "user_supplied") {
-            _colorGenesAttr(attr, false);
-            colorbar(currentGeneColorScale);
-            if (callback){
+    }
+    // Color by expression in a selected celltype
+    else {
+        $.getJSON(exprURL+colorOpt+'?callback=?', function(data) {
+            cy.nodes("[nodetype='gene']").forEach(function(n) {
+                n.data('expr:'+colorOpt, data[n.id()]);
+            });
+            var margins = _colorGenesExpr(colorOpt);
+            colorbar(1.0, 10.0, 100.0);
+            if (callback) {
                 callback();
             }
-        }
+        });
     }
-}
+};
 
-
-function colorbar(scl) {
+function colorbar(m0, m1, m2) {
     d3selectAll('svg').remove();
-    if (Number.isFinite(currentGeneColorScale.domain()[0]) && Number.isFinite(currentGeneColorScale.domain()[1])) {
         var colorbarWidth = 250;
         var txtHeight = 30;
         var colorbarHeight = 50;
@@ -517,23 +511,22 @@ function colorbar(scl) {
             .style("fill", "url(#linear-gradient)");
         
         bsvg.append("text")
-            .text(scl.minExprValue.toFixed(1))
+            .text(m0.toFixed(1))
             .attr("x", 0)
             .attr("y", colorbarHeight+20);
         
         bsvg.append("text")
-            .text(scl.midExprValue.toFixed(1))
+            .text(m1.toFixed(1))
             .attr("x", colorbarWidth / 2)
             .attr("y", colorbarHeight+20)
             .attr("text-anchor", "middle");
 
         bsvg.append("text")
-            .text(scl.maxExprValue.toFixed(1))
+            .text(m2.toFixed(1))
             .attr("x", colorbarWidth)
             .attr("y", colorbarHeight+20)
             .attr("text-anchor", "end");
-    }
-}
+};
 
 function colorizeNodes() {
     var stile = cy.style(cytoscapeStyle);
@@ -559,7 +552,7 @@ function colorizeNodes() {
         });
     }
     stile.update();
-    var fcGiven = cy.nodes('[nodetype="gene"]').map(function(n){return !isNaN(n.data('expr:user_supplied'))})
+    var fcGiven = cy.nodes('[nodetype="gene"]').map(function(n){return !isNaN(n.data('expr:user_supplied'));})
         .reduce(function(total, curValue){return total += curValue;}, 0);
     if (fcGiven > 0) {
         $("#celltype").val("user_supplied");
