@@ -142,6 +142,24 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         n = list(filter(lambda n: n['data']['id']=='GO:0071300', net_dict['elements']['nodes']))[0]
         self.assertEqual(n['data']['tot_gn'], len(O.get_attr('GO:0071300', 'human')))
         
+        # Test CSV response
+        csv_resp = c.get(urls.reverse('GOnet-csv-res', args=(str(sn.id),)))
+        b = io.StringIO(); b.write(csv_resp.content.decode()); b.seek(0)
+        res = pd.read_csv(b, sep=',', index_col=1)
+        self.assertIn('LTK', res.loc['GO:0032526', 'Genes'])
+        
+        # Test TXT response
+        txt_resp = c.get(urls.reverse('GOnet-txt-res', args=(str(sn.id),)))
+        b = io.StringIO()
+        b.write(txt_resp.content.decode())
+        b.seek(0)
+        line_found = False
+        for line in b:
+            if line.strip().startswith('GO:0032526'):
+                self.assertIn('LTK', line)
+                line_found = True
+                break
+        self.assertTrue(line_found)
 
     # annotated vs terms enriched in genelist2.
     # graph should be consistent with enrichment results

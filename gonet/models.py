@@ -334,6 +334,8 @@ class GOnetSubmission(models.Model):
         args, kwargs = ((self.parsed_data.to_json(), self.slim,
                          self.namespace, self.organism),
                         {'jobid':str(self.id)})
+        if self.slim == 'custom':
+            kwargs.update({'terms':self.parsed_custom_terms.to_json()})
         s = annot_csv.signature(args=args, kwargs=kwargs)
         r = process_signature(s)
 
@@ -345,9 +347,12 @@ class GOnetSubmission(models.Model):
         self.save()
 
     def get_annot_res_txt(self):
+        kwargs = {'jobid':str(self.id)}
+        if self.slim == 'custom':
+            kwargs.update({'terms':self.parsed_custom_terms.to_json()})
         s = annot_txt.signature(args=(self.parsed_data.to_json(), self.slim,
                                       self.namespace, self.organism),
-                                kwargs={'jobid':str(self.id)})
+                                kwargs=kwargs)
         r = process_signature(s)
         self.res_txt = r
         self.save()

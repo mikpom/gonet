@@ -10,10 +10,13 @@ def _pprint_successors(ret, format_func, G, node, indent=1):
         _pprint_successors(ret, format_func, G, s, indent=indent+1)
 
 @celery_app.task
-def annot_txt(dfjs, slim, namespace, organism, jobid=None):
+def annot_txt(dfjs, slim, namespace, organism, terms=None, jobid=None):
     _df = pd.read_json(dfjs)
     df = _df[_df['duplicate_of']=='']
-    terms = slimterms(slim, namespace)
+    if slim=='custom':
+        terms = list(pd.read_json(terms)['termid'])
+    else:
+        terms = slimterms(slim, namespace)
     def _format_term(t, indent):
         tname = O.get_attr(t, 'name')
         termgenes = []
@@ -126,9 +129,12 @@ def enrich_csv(dfjs, enrichjs, qval, organism, jobid=None):
     return smry.to_json(orient='split')
 
 @celery_app.task
-def annot_csv(dfjs, slim, namespace, organism, jobid=None):
+def annot_csv(dfjs, slim, namespace, organism, terms=None, jobid=None):
     df = pd.read_json(dfjs)
-    terms = slimterms(slim, namespace)
+    if slim=='custom':
+        terms = list(pd.read_json(terms)['termid'])
+    else:
+        terms = slimterms(slim, namespace)
     smry = get_summary_df(df, terms, organism)
     smry.sort_values('NofGenes', ascending=False, inplace=True)
     smry['asc_N'] = list(range(1, len(smry)+1))
