@@ -229,6 +229,8 @@ function runLytAnimated(cy, orphans, nonOrphans, lytName, animationDuration, hpa
     var lytOpts = layoutOpts[lytName];
     var components = nonOrphans.components().sort(function(a,b){return b.length-a.length;});
     var animPromises = [];
+
+    // This computes the layouts and puts the nodes back
     var computePosPromises = components.map(function(comp) {
         return computeLytPos(cy, comp, lytName);
     });
@@ -241,7 +243,7 @@ function runLytAnimated(cy, orphans, nonOrphans, lytName, animationDuration, hpa
                          y : anchorBbox.ymin - computedPos.ymin};
             comp.forEach(function(ele) {
                 var anim = ele.animation({position : {x:computedPos.x[ele.id()]+shift.x,
-                                                    y:computedPos.y[ele.id()]+shift.y},
+                                                      y:computedPos.y[ele.id()]+shift.y},
                                           duration:animationDuration});
                 animPromises.push(anim.promise());
                 anim.play();
@@ -272,7 +274,7 @@ function computeLytPos(cy, eles, lytname) {
                        xmax : undefined, ymax : undefined};
     cy.startBatch();
     var initPositions = eles.map(function(ele) {
-        return Object.assign({}, ele.position());
+        return Object.assign({}, ele.position()); // Trick to create a copy
     });
     var lyt = eles.layout(layoutOpts[lytname]);
     var promise = lyt.promiseOn("layoutstop").then(function() {
@@ -280,12 +282,13 @@ function computeLytPos(cy, eles, lytname) {
             computedPos.x[ele.id()] = ele.position().x;
             computedPos.y[ele.id()] = ele.position().y;
         });
-        computedPos.xmin = eles.min(function(ele){return ele.position().x;}).value;
-        computedPos.xmax = eles.max(function(ele){return ele.position().x;}).value;
-        computedPos.ymin = eles.min(function(ele){return ele.position().y;}).value;
-        computedPos.ymax = eles.max(function(ele){return ele.position().y;}).value;
-        computedPos.w = computedPos.xmax - computedPos.xmin;
-        computedPos.h = computedPos.ymax - computedPos.ymin;
+        var bbox = eles.boundingBox();
+        computedPos.xmin = bbox.x1;
+        computedPos.xmax = bbox.x2;
+        computedPos.ymin = bbox.y1;
+        computedPos.ymax = bbox.y2; 
+        computedPos.w = bbox.w;
+        computedPos.h = bbox.h;
         eles.forEach(function(ele, eleIndex) {
             ele.position(initPositions[eleIndex]);
         });

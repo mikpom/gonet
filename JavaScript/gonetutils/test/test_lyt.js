@@ -7,34 +7,13 @@ var chai = require('chai'),
     fs = require('fs'),
     promisetests = require('../promisetest');
 
-// describe('Read and render layout correctly (genelist 3)', function() {
-//     it('should return correct number of nodes', function() {
-//         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist3_network.cyjs', 'utf8'));
-//         var cy = cytoscape()
-//         cy.json(netData)
-//         cy.nodes().length.should.equal(321);
-//     });
-//     it('Position nodes correctly', function() {
-//         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist3_network.cyjs', 'utf8'));
-//         var cy = cytoscape();
-//         cy.json(netData);
-//         cy.nodes('[nodetype="gene"]').style({display:'none'});
-//         lytutils.runLyt(cy, "hierarchical", 0, function () {
-//             assert.deepEqual(cy.getElementById("GO:0002682").position(), { x: 345.25, y: 127.5 });
-//             assert.deepEqual(cy.getElementById("GO:0008283").position(), { x: 155.5, y: 1090.5 });
-//         });
-//     });
-// });
-
 describe('Read and render _COSE_ layout correctly (genelist 2)', function() {
     it('Position nodes correctly', function(done) {
-        console.log(">>>beginning of IT");
         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist2_network.cyjs', 'utf8'));
         var cyInst = cytoscape({ styleEnabled: true, headless: true });
         cyInst.json(netData);
         cyInst.nodes().length.should.equal(90);
         var p = lytutils.runLyt(cyInst, "cose", true, 10);
-        console.log('>>>runLyt promise', p);
         p.then(function () {
             var orphans = cyInst.nodes(':visible').filter(function(n){return n.neighborhood().nodes(':visible').length==0;});
             var nonOrphans = cyInst.elements(':visible').diff(orphans).left;
@@ -57,6 +36,7 @@ describe('Read and render _COSE_ layout correctly (genelist 2)', function() {
     });
 });
 
+
 describe("Test computeLytPos function", function() {
     it("Should return correct elements positions", function(done) {
         var netData = JSON.parse(fs.readFileSync("test/sampdata/genelist2_network.cyjs", "utf8"));
@@ -67,9 +47,6 @@ describe("Test computeLytPos function", function() {
             var xPos = cyInst.nodes().map(function(ele) {return pos.x[ele.id()];});
             var xPosSet = new Set(xPos);
             assert.equal(xPosSet.size, 10);
-
-            var xPosMin = xPos.reduce(function(a, b) {return Math.min(a, b);});
-            assert.equal(xPosMin, pos.xmin);
             
             cyInst.destroy();
             done();
@@ -80,8 +57,36 @@ describe("Test computeLytPos function", function() {
     });
 });
 
-describe('Read and render _HIERARCHICAL_ layout correctly (genelist 2)', function() {
-    it('Position nodes correctly', function(done) {
+describe('Read and render _HIERARCHICAL_ layout correctly (network1)', function() {
+    
+    it('Position nodes correctly with genes hidden (network1)', function(done) {
+        var netData = JSON.parse(fs.readFileSync('test/sampdata/network1.cyjs', 'utf8'));
+        var cyInst = cytoscape({ styleEnabled: true, headless: true });
+        cyInst.json(netData);
+        cyInst.nodes().length.should.equal(94);
+        cyInst.nodes('[nodetype="gene"]').style({display:'none'});
+        var hpad=100;
+        lytutils.runLyt(cyInst, "hierarchical", true, 10, hpad).then(function (cy) {
+            
+            var orphans = cyInst.nodes(':visible').filter(function(n){return n.neighborhood().nodes(':visible').length==0;});
+            var nonOrphans = cyInst.elements(':visible').diff(orphans).left;
+            var components = nonOrphans.components().sort(function(a,b){return b.length-a.length;});
+            // components should be tightly positioned with hpad of 100 as provided
+            assert.equal(components[0].boundingBox().x2+hpad, components[1].boundingBox().x1);
+            assert.equal(components[1].boundingBox().x2+hpad, components[2].boundingBox().x1);
+
+            cyInst.destroy();
+            done();
+
+        }).catch(function(err) {
+            console.log('Got error', err.stack);
+            done(err);
+        });
+    });
+});
+
+describe('Read and render _HIERARCHICAL_ layout correctly', function() {
+    it('Position nodes correctly (genelist2 network)', function(done) {
         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist2_network.cyjs', 'utf8'));
         var cyInst = cytoscape({ styleEnabled: true, headless: true });
         cyInst.json(netData);
@@ -101,8 +106,6 @@ describe('Read and render _HIERARCHICAL_ layout correctly (genelist 2)', functio
             // GO:0006323 should be higher than all of its successors
             var dnaPackagingPos = cyInst.getElementById("GO:0006323").position();
             var successorsBbox = cyInst.getElementById("GO:0006323").successors().nodes().boundingBox();
-            console.log("dnaPackagingPos", dnaPackagingPos);
-            console.log("successorsBbox", successorsBbox);
             assert.isBelow(dnaPackagingPos.y, successorsBbox.y1);
             cyInst.destroy();
             done();
@@ -117,58 +120,3 @@ describe('Read and render _HIERARCHICAL_ layout correctly (genelist 2)', functio
         });
     });
 });
-
-
-// describe('testing promise objects', function() {
-//     it('resolve simple promise', function(done) {
-//         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist2_network.cyjs', 'utf8'));
-//         var cy = cytoscape();
-//         cy.json(netData);
-//         promisetests.testpromise(cy).then(function(val){
-//             assert.deepEqual(val, 90);
-//             done();
-//         }).catch(function(err) {
-//             done(err);
-//         });
-//     });
-//     it('resolve promise with grid layout', function(done) {
-//         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist2_network.cyjs', 'utf8'));
-//         var cy = cytoscape({ styleEnabled: true, headless: true});
-//         cy.json(netData);
-//         promisetests.runlayout(cy).then(function(cy){
-//             //cy.nodes().forEach(function(n){console.log(n.position());});
-//             assert.deepEqual(cy.nodes().length, 90);
-//             cy.destroy();
-//             done();
-//         }).catch(function(err) {
-//             done(err);
-//         });
-//     });
-//     it('move one node to (100, 100) with positionNode func', function(done) {
-//         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist2_network.cyjs', 'utf8'));
-//         var cy = cytoscape({ styleEnabled: true, headless: true});
-//         cy.json(netData);
-//         promisetests.positionNode(cy, "GO:2000520").then(function(cy) {
-//             assert.deepEqual(cy.getElementById("GO:2000520").position(), {x:100, y:100});
-//             cy.destroy();
-//             done();
-//         }).catch(function(err) {
-//             done(err);
-//         });
-//     });
-    
-//     it('move one node to (100, 100) with animation func', function(done) {
-//         var netData = JSON.parse(fs.readFileSync('test/sampdata/genelist2_network.cyjs', 'utf8'));
-//         //var cy = cytoscape({ styleEnabled: true, headless: true });
-//         var cy = cytoscape({ styleEnabled: true});
-//         cy.json(netData);
-//         promisetests.animateNode(cy, "GO:2000520").then(function(){
-//             assert.deepEqual(cy.getElementById("GO:2000520").position(), {x:100, y:100});
-//             cy.destroy();
-//         }).then(function() {
-//             done();
-//         }).catch(function(err) {
-//             done(err);
-//         });
-//     });
-// });

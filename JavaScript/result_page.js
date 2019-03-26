@@ -581,6 +581,11 @@ $(document).ready(function() {
     var n;
     window.cy = cy;
     $("img#rendering-spinner").attr("src", spinnerIcon);
+    cy.on('tap', function(evt) {
+        window.tapevt = evt;
+        console.log(evt.position);
+    });
+    
     $.getJSON(netURL+'?callback=?', function (data) {
         cy.json(data);
         defaultEdges = data.elements.edges;

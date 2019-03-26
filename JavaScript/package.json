@@ -29,6 +29,8 @@
     "webpack-command": "^0.4.1"
   },
   "dependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
     "npx": "^10.2.0"
   }
 }
