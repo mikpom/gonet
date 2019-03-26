@@ -22,6 +22,11 @@
 
 {% endblock %}
 
+{% block head_block %}
+    <script>var bgPopoverContent = ["BHLHE40", "CCDC75", "ABCB1", "CCL20"].map(function(g){return `<p class="my-0">${g}</p>`}).join('')</script>
+    <script>var bgPopoverTitle = 'Plain text with one gene per line, e.g.'</script>
+{% endblock %}
+
 {% block content %}
     <div class="container submitform">
         <form id="input-form" name="formular" action="{% url 'GOnet-submit-form' %}" method="post" enctype="multipart/form-data">
@@ -92,7 +97,9 @@
                             <tr><td>q-value threshold</td><td>{{ form.qvalue }}</td></tr>
                             <tr><td>Background<a class="mx-3" href="{% url 'doc-part' 'enrich_bg' %}">?</a></td><td>{{ form.bg_type }}</td></tr>
                             <tr id="predef_bg_row"><td>All genes expressed in</td><td>{{ form.bg_cell }}</td></tr>
-                            <tr id="custom_bg_row"><td>List of background genes</td><td>{{ form.bg_file }}</td></tr>
+                            <tr id="custom_bg_row">
+                                <td>List of background genes <a tabindex="0" data-toggle="popover"  id="popoverbutton" style="cursor:pointer; color:black; font-style:italic"> (File format)</a></td>
+                                <td>{{ form.bg_file }}</td></tr>
 
                         </table>        
                     </div>
@@ -115,6 +122,7 @@
                 <tr>
                     <td>
                         <button class="btn btn-outline-primary" type="submit" name="submit">Submit</button>
+
                         
                     </td>
                     <td>

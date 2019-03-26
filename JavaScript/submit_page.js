@@ -1,6 +1,7 @@
 var $ = require("jquery");
 require("expose-loader?$!jquery");
 require("expose-loader?jQuery!jquery");
+import 'bootstrap';
 
 var sampdata = ["ABCB1	0.6", "AK5	-0.54", "AMZ2P1	-0.65",
                 "APOBR	0.53", "BHLHE40	0.51", "CCDC75	0.52",
@@ -26,7 +27,6 @@ var sampdata = ["ABCB1	0.6", "AK5	-0.54", "AMZ2P1	-0.65",
                 "SYTL2	0.56", "TMOD2	0.6", "TXK	-0.52",
                 "ZNF225	-0.51", "ZNF256	-0.51", "ZNF618	-0.55",
                 "ZNF761	-0.53"].join('\n');
-
 
 function updateAnalysisType() {
     var analysisType = $("#analysis_type input").filter(function(i, e){return $(e).prop("checked");}).val();
@@ -103,7 +103,13 @@ function updateOrganism() {
 
 }
 
+
 $(document).ready(function() {
+    $("#popoverbutton").popover({title:bgPopoverTitle, //defined in Template
+                                 content:bgPopoverContent, //defined in Template
+                                 html:true,
+                                 trigger:'focus'});
+    
     $("#samp_data_button").click(function(){
         $("#id_paste_data").val(sampdata);
         $("#id_organism").val("human");
