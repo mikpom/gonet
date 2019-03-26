@@ -1,0 +1,18 @@
+#bg-popover-dismiss {
+    cursor:pointer; 
+    font-size:x-small;
+}
+
+#bg-popover-dismiss:hover {
+    text-decoration:underline;
+}
+
+#popoverbutton {
+    cursor:pointer;
+    color:black;
+    font-style:italic
+}
+
+#popoverbutton:hover {
+    text-decoration:underline;
+}

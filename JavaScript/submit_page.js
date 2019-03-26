@@ -105,10 +105,14 @@ function updateOrganism() {
 
 
 $(document).ready(function() {
-    $("#popoverbutton").popover({title:bgPopoverTitle, //defined in Template
-                                 content:bgPopoverContent, //defined in Template
-                                 html:true,
-                                 trigger:'focus'});
+    $("#popoverbutton").popover({title:$("#bg-popover-title").html(),
+                                 content:$("#bg-popover-content").html(), 
+                                 html:true});
+    $("#popoverbutton").on('inserted.bs.popover', function() {
+        $("#bg-popover-dismiss").on("click", function() {
+            $("#popoverbutton").popover('hide');
+        });
+    });
     
     $("#samp_data_button").click(function(){
         $("#id_paste_data").val(sampdata);

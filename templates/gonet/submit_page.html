@@ -23,8 +23,17 @@
 {% endblock %}
 
 {% block head_block %}
-    <script>var bgPopoverContent = ["BHLHE40", "CCDC75", "ABCB1", "CCL20"].map(function(g){return `<p class="my-0">${g}</p>`}).join('')</script>
-    <script>var bgPopoverTitle = 'Plain text with one gene per line, e.g.'</script>
+    <link rel="stylesheet" href="{% static "css/submit.css" %}">
+    <script type="text/html" id="bg-popover-content">
+        <p class="my-0">BHLHE40</p>
+        <p class="my-0">CCDC75</p>
+        <p class="my-0">ABCB1</p>
+        <p class="my-0">CCL20</p>
+        <a id="bg-popover-dismiss" class="my-1 float-right">dismiss</a>
+    </script>
+    <script type="text/html" id="bg-popover-title">
+        <p class="my-1">Plain text with one gene per line, e.g.</p>
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -98,7 +107,7 @@
                             <tr><td>Background<a class="mx-3" href="{% url 'doc-part' 'enrich_bg' %}">?</a></td><td>{{ form.bg_type }}</td></tr>
                             <tr id="predef_bg_row"><td>All genes expressed in</td><td>{{ form.bg_cell }}</td></tr>
                             <tr id="custom_bg_row">
-                                <td>List of background genes <a tabindex="0" data-toggle="popover"  id="popoverbutton" style="cursor:pointer; color:black; font-style:italic"> (File format)</a></td>
+                                <td>List of background genes <a data-toggle="popover"  id="popoverbutton"> (File format)</a></td>
                                 <td>{{ form.bg_file }}</td></tr>
 
                         </table>        
