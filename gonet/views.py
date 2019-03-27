@@ -46,7 +46,12 @@ def check_analysis_progress(request, jobid):
             URL = urls.reverse('GOnet-run-results', args=(jobid, ))
             return HttpResponseRedirect(URL)
         else:
-            if 'TooManyEntriesGraphError' in job_err:
+            if 'InputValidationError' in job_err:
+                msg = 'Error occured while validating input file. '\
+                      +'Check input format.'
+                return render(request, 'gonet/err/input_errors_page.html',
+                              {'error': msg})
+            elif 'TooManyEntriesGraphError' in job_err:
                 msg = 'Lists with more than 3000 entries are '\
                       +'incompatible with output type "Graph". You may'\
                       +' use "CSV" or "TXT" instead.'

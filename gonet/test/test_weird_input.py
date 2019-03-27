@@ -115,3 +115,10 @@ class WeirdInputTestCase(TransactionTestCase):
         sn = GOnetSubmission.objects.latest('submit_time')
         gn = sn.parsed_data
         self.assertEqual(gn.shape[0], 2)
+
+    def test_upload_binary(self):
+        fl = open(pkg_file(__name__, 'data/genelist10.csv'), 'rb')
+        req = dict(job_req, **{'uploaded_file':fl, 'organism':'human'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Error occured while validating')

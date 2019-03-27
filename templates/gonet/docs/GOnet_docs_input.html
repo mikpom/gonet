@@ -1,7 +1,7 @@
 {% extends "gonet/docs/GOnet_docs_base.html" %}
 {% block doc_content %}
     <h2 id="input-help">Input</h2>
-    <p>Input genes can be uploaded (or pasted in the relevant submit form section) in the following format</p>
+    <p>Input genes can be uploaded (or pasted in the relevant submit form section) in plain text format like so</p>
     <div class="w-25 px-4 my-2" id="input-example">
         <p class="my-0">ABCB1</p>
         <p class="my-0">AK5</p>
@@ -12,7 +12,7 @@
         <p class="my-0">CCL20</p>
         <p class="my-0">...</p>
     </div>
-    <p class="my-3"><span class="font-weight-bold">NOTE</span>: no header should be added. Genes start with the first line</p>
+    <p class="my-3"><span class="font-weight-bold">NOTE</span>: no header should be added. Genes start from the first line.</p>
     <h4>Constrast values</h4>
     <p>In addition to the genes you can provide <b>optional</b> value which will be used to colorize the nodes. Common use case is to use logarithm of fold change (log2FC) between two conditions. A separator designated in submission form should be used to separate gene names and contrast values. For example, if  <code>{tab}</code> is a separator. </p>
     <div class="w-25 px-4 my-2" id="input-example">

@@ -129,7 +129,12 @@ class GOnetSubmission(models.Model):
         try:
             if (self.file_uploaded):
                 stream = self.uploaded_file
-                first_line = stream.readline().decode().strip('\r\n')
+                first_line = stream.readline()
+                try:
+                    first_line = first_line.decode()
+                except UnicodeDecodeError as err:
+                    raise InputValidationError('First line was not decoded')
+                first_line = first_line.strip('\r\n')
             else:
                 stream = io.StringIO(self.paste_data)
                 first_line = stream.readline().strip('\r\n')
