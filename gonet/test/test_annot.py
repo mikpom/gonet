@@ -106,7 +106,7 @@ class GOnetAnnotTestCase(TransactionTestCase):
 
         #Check expression values (DICE-DB)
         resp = c.get(urls.reverse('GOnet-get-expression',
-                                  kwargs={'jobid':str(sn.id), 'celltype':'DICE-CD4STIM'}))
+                                  kwargs={'jobid':str(sn.id), 'celltype':'DICE-CD4 T cell (stim)'}))
         expr_vals = json.loads(resp.content.decode())
         self.assertAlmostEqual(expr_vals['A1XBS5'], 0.09010716525639434)
 

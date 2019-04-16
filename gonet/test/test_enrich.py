@@ -90,7 +90,7 @@ class DefaultTestCase(TransactionTestCase):
 
         #Check expression values (DICE-DB)
         resp = c.get(urls.reverse('GOnet-get-expression',
-                                  kwargs={'jobid':str(sn.id), 'celltype':'DICE-THSTAR'}))
+                                  kwargs={'jobid':str(sn.id), 'celltype':'DICE-Th1Th17'}))
         expr_vals = json.loads(resp.content.decode())
         self.assertAlmostEqual(expr_vals['P10721'], 9.893615)
 

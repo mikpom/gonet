@@ -10,7 +10,7 @@ def _converter(g):
         return g
     else:
         return g.split('.')[0]
-dice_data = pd.read_csv(pkg_file(__name__, 'data/genes/r24tpm.tsv.gz'), sep='\t',
+dice_data = pd.read_csv(pkg_file(__name__, 'data/genes/dice_tpm.tsv.gz'), sep='\t',
                       converters={0:_converter},
                       index_col=0)
 _mmus_x = pd.read_csv(pkg_file(__name__, 'data/genes/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_GSE36026.tsv.gz'),
@@ -18,8 +18,8 @@ _mmus_x = pd.read_csv(pkg_file(__name__, 'data/genes/Mus_musculus_RNA-Seq_read_c
 bgee_data = _mmus_x.pivot(index='Gene ID', columns='Anatomical entity name', values='TPM')
 
 celltype_choices = {sp:OrderedDict() for sp in ('human', 'mouse')}
-celltype_choices['human'].update( {'DICE-'+c : '(DICE-DB) '+c for c in dice_data.columns} )
-celltype_choices['human'].update( {'HPA-'+tissue : '(HPA) '+tissue for tissue in \
-                                   hpa_data.columns} )
-celltype_choices['mouse'].update({'Bgee-'+c : '(Bgee) '+c for c in bgee_data.columns})
+celltype_choices['human'].update([ ('DICE-'+c,  '(DICE-DB) '+c) for c in dice_data.columns ])
+celltype_choices['human'].update([ ('HPA-'+tissue, '(HPA) '+tissue) for tissue in \
+                                    hpa_data.columns ])
+celltype_choices['mouse'].update([ ('Bgee-'+c, '(Bgee) '+c) for c in bgee_data.columns ])
 
