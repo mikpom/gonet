@@ -5,6 +5,10 @@ import pandas as pd
 
 hpa_data = pd.read_csv(pkg_file(__name__, 'data/genes/E-MTAB-2836-query-results.tpms.tsv.gz'),
                        sep='\t', comment='#', index_col=0).drop('Gene Name', axis=1)
+
+Tcells = ['Th1', 'Th2', 'Th17', 'Th1Th17', 'Tfh', 'Treg (naive)', 'Treg (memory)',
+          'CD4 T cell (naive)', 'CD4 T cell (stim)', 'CD8 T cell (naive)', 'CD8 T cell (stim)']
+
 def _converter(g):
     if 'PAR_Y' in g:
         return g

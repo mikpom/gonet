@@ -7,7 +7,7 @@ from . import job_req
 
 c = Client()
 
-class GOnetEnrichmentWBgTestCase(TransactionTestCase):
+class GOnetEnrichmentCustomBgTestCase(TransactionTestCase):
     def test_GO_enrichment_list3_qval0001_CD8bg(self):
         input_lines = open(pkg_file(__name__, 'data/genelist3.csv'), 'r').read()
         bg_file = open(pkg_file(__name__, 'data/CD8_cells_background_TPM10.lst'), 'r')
@@ -21,6 +21,28 @@ class GOnetEnrichmentWBgTestCase(TransactionTestCase):
         enriched = set(sn.enrich_res_df.query('q<0.0001')['term'])
         self.assertIn('GO:0002376', enriched) # Immune system process
  
+    def test_GO_enrich_genelist6_long(self):
+        input_lines = open(pkg_file(__name__, 'data/genelist6.tsv'), 'r').read()
+        bg_file = open(pkg_file(__name__, 'data/DPOS_Mgate_Tcells_background_TPM1.lst'), 'r')
+        req = dict(job_req, **{'paste_data':input_lines, 'bg_type':'custom',
+                                   'bg_file':bg_file, 'qvalue':0.0001})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+        self.assertEqual(resp.status_code, 200)
+
+class GOnetEnrichmentPredefBgTestCase(TransactionTestCase):
+    def test_GO_enrichment_list11_predefined_BG(self):
+        input_lines = open(pkg_file(__name__, 'data/genelist11.tsv'), 'r').read()
+        req = dict(job_req, **{'paste_data':input_lines, 'bg_type': 'predef',
+                               'bg_cell' : 'DICE-Tcells'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+
+        #check enriched terms
+        enriched = set(sn.enrich_res_df.query('q<0.01')['term'])
+        # <GO:0097400 interleukin-17-mediated signaling pathway>
+        self.assertIn('GO:0097400', enriched)
+
     def test_GO_enrichment_list3_predefined_BG(self):
         input_lines = open(pkg_file(__name__, 'data/genelist3.csv'), 'r').read()
         req = dict(job_req, **{'paste_data':input_lines, 'bg_type': 'predef',
@@ -43,7 +65,7 @@ class GOnetEnrichmentWBgTestCase(TransactionTestCase):
 
         #check enriched terms
         enriched = set(sn.enrich_res_df.query('q<0.01')['term'])
-        self.assertIn('GO:0002376', enriched)
+        self.assertIn('GO:0002376', enriched) # Immune system process
         
     def test_GO_enrichment_list7_mouse_predefined_BG(self):
         input_lines = open(pkg_file(__name__, 'data/genelist7.txt'), 'r').read()
@@ -67,11 +89,4 @@ class GOnetEnrichmentWBgTestCase(TransactionTestCase):
         enriched = set(sn.enrich_res_df.query('q<0.01')['term'])
         self.assertGreater(len(enriched), 0)
         
-    def test_GO_enrich_genelist6_long(self):
-        input_lines = open(pkg_file(__name__, 'data/genelist6.tsv'), 'r').read()
-        bg_file = open(pkg_file(__name__, 'data/DPOS_Mgate_Tcells_background_TPM1.lst'), 'r')
-        req = dict(job_req, **{'paste_data':input_lines, 'bg_type':'custom',
-                                   'bg_file':bg_file, 'qvalue':0.0001})
-        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
-        sn = GOnetSubmission.objects.latest('submit_time')
-        self.assertEqual(resp.status_code, 200)
+    

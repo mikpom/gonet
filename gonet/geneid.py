@@ -12,12 +12,18 @@ print('Start reading gene mapping files...', end='', flush=True)
 # Reading Uniprot data
 ######################
 uni2ens= {}
+ens2uni = {'human':{}, 'mouse':{}}
 for sp, fl in (('human', 'HUMAN_9606_idmapping.dat.EnsemblIDs.gz'),
                ('mouse', 'MOUSE_10090_idmapping.dat.EnsemblIDs.gz')):
     fl = pkg_file(__name__, 'data/genes/'+fl)
     uni_ens = pd.read_csv(fl, sep='\t', usecols=(0,2),
                               header=None, names=['uni', 'ens'])
     uni2ens[sp] = to_dict_of_lists(uni_ens.set_index('uni')['ens'])
+    ens2uni[sp] = to_dict_of_lists(uni_ens.set_index('ens')['uni'])
+    
+    # for key, values in uni2ens[sp].items():
+    #     for value in values:
+    #         ens2uni[sp].setdefault(value, []).append(key)
 
 ##################
 # Reading MGI data
@@ -27,7 +33,7 @@ mgi_ens = pd.read_csv(pkg_file(__name__, 'data/genes/MRK_ENSEMBL.rpt.gz'),
                       sep='\t', usecols=(0,4,5),
                       names=['mgi_id', 'chr', 'ensembl_id'])
 mgi2ens = to_dict_of_lists(mgi_ens.set_index('mgi_id')['ensembl_id'])
-# ens2mgi = to_dict_of_lists(mgi_ens.set_index('ensembl_id')['mgi_id'])
+ens2mgi = to_dict_of_lists(mgi_ens.set_index('ensembl_id')['mgi_id'])
 
 # MGI-Uniprot conversions
 mgi_uni = pd.read_csv(pkg_file('gonet', 'data/genes/MRK_SwissProt.rpt.gz'),

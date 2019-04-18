@@ -4,8 +4,8 @@ import uuid
 import pandas as pd
 from time import sleep
 from .clry import celery_app
-from .expression import hpa_data, bgee_data, dice_data
-from .geneid import uni2ens, mgi2ens
+from .expression import hpa_data, bgee_data, dice_data, Tcells
+from .geneid import uni2ens, mgi2ens, ens2mgi, ens2uni
 import genontol
 from genontol.read import goa as read_goa
 from genontol.ontol import GOntology
@@ -44,6 +44,7 @@ for sp, gaf_file in [('human', 'goa_human.gaf.gz'),
     gaf[sp].set_index(['db_object_id', 'go_id'], drop=False, inplace=True)
     for v in gaf[sp][['db_object_id', 'go_id']].itertuples():
         id2go[sp][v.db_object_id].add(v.go_id)
+annotated = {sp:set(df.db_object_id) for sp, df in gaf.items()}
 
 # graph is directed from  specific term to less specific !!
 O = GOntology.from_obo(pkg_file(__name__, 'data/GO/go-basic.obo.gz'))
@@ -72,6 +73,7 @@ def compute_enrichment(genes, namespace, sp, bg_type, jobid=None,
                        bg_genes=None, bg_id=None, min_category_size=2,
                        max_category_size=10000, max_category_depth=10):
 
+    _genes = set(genes)
     kwargs = { 'max_category_size':max_category_size,
                'max_category_depth':max_category_depth,
                'min_category_size':min_category_size }
@@ -81,7 +83,9 @@ def compute_enrichment(genes, namespace, sp, bg_type, jobid=None,
     else:
         if bg_type == 'predef':
             if sp=='human':
-                if bg_genes == 'DICE-any':
+                if bg_genes == 'DICE-Tcells':
+                    bg_ens = set(dice_data[(dice_data[Tcells]>1).any(axis=1)].index)
+                elif bg_genes == 'DICE-any':
                     bg_ens = set(dice_data[(dice_data>1).any(axis=1)].index)
                 elif bg_genes.startswith('DICE-'):
                     c = bg_genes[5:]
@@ -91,26 +95,29 @@ def compute_enrichment(genes, namespace, sp, bg_type, jobid=None,
                 elif bg_genes.startswith('HPA-'):
                     c = bg_genes[4:]
                     bg_ens = set(hpa_data[hpa_data[c]>1].index)
-                bg_uniprot = list()
-                for uid, ensids in uni2ens[sp].items():
-                    for ensid in ensids:
-                        if ensid in bg_ens:
-                            bg_uniprot.append(uid)
-                bg_final = list(set(bg_uniprot).union(set(genes)))
+                bg_uniprot = set()
+                for ens_id in bg_ens:
+                        for uni_id in ens2uni[sp].get(ens_id, []):
+                            if uni_id in _genes or uni_id in annotated[sp]:
+                                bg_uniprot.add(uni_id)
+                                break
+                bg_final = bg_uniprot.union(_genes)
             elif sp=='mouse':
                 if bg_genes == 'Bgee-any':
                     bg_ens = set(bgee_data[(bgee_data>1).any(axis=1)].index)
                 elif bg_genes.startswith('Bgee-'):
                     c = bg_genes[5:]
                     bg_ens = set(bgee_data[bgee_data[c]>1].index)
-                bg_mgi = list()
-                for mgi_id, ensids in mgi2ens.items():
-                    for ensid in ensids:
-                        if ensid in bg_ens:
-                            bg_mgi.append(mgi_id)
-                bg_final = list(set(bg_mgi).union(set(genes)))
+
+                bg_mgi = set()
+                for ens_id in bg_ens:
+                        for mgi_id in ens2mgi.get(ens_id, []):
+                            if mgi_id in _genes or mgi_id in annotated[sp]:
+                                bg_mgi.add(mgi_id)
+                                break
+                bg_final = bg_mgi.union(_genes)
         elif bg_type == 'custom':
-            bg_final = list(set(bg_genes).union(set(genes)))
+            bg_final = list(set(bg_genes).union(_genes))
         bg_attr = bg_id if not bg_id is None else str(uuid.uuid1())
         bg_dict = defaultdict(set)
         for gene in bg_final:
@@ -121,7 +128,7 @@ def compute_enrichment(genes, namespace, sp, bg_type, jobid=None,
             except KeyError:
                 continue
         O.propagate(bg_dict, bg_attr)
-        res = O.get_enrichment(genes, bg_attr, namespace, **kwargs)
+        res = O.get_enrichment(_genes, bg_attr, namespace, **kwargs)
         O.del_attr(bg_attr)
     return res.to_json()
 

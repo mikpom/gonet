@@ -45,8 +45,9 @@ class GOnetSubmission(models.Model):
                     (0.01, '** ('+chr(8804)+' 0.01)'),
                     (0.001, '*** ('+chr(8804)+' 0.001)'),
                     (0.0001, '**** ('+chr(8804)+' 0.0001)'))
-    bg_choices = (('DICE-any', 'Any DICE-DB celltype'),) \
-                 + (('HPA-any', 'Any HPA celltype'),) \
+    bg_choices = (('DICE-any', 'Any DICE-DB celltype'),
+                  ('DICE-Tcells', 'T-cells (any DICE-DB T-cells)'),
+                  ('HPA-any', 'Any HPA celltype')) \
                  + tuple(celltype_choices['human'].items()) \
                  + (('Bgee-any', 'Any Bgee celltype'),) \
                  + tuple(celltype_choices['mouse'].items())
