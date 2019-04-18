@@ -45,11 +45,11 @@ class DefaultTestCase(TransactionTestCase):
         self.assertIn('GO:0006334', set(enrichterms))
 
         # Test specific terms
-        t_edge_name = 'GO:0006334 (interacts with) HIST2H2BC'
+        t_edge_name = 'GO:0006334 (interacts with) HIST1H2BC'
         e = list(filter(lambda e: e['data']['name']==t_edge_name,
                            net_dict['elements']['edges']))[0]
         self.assertDictEqual(e['data']['specific_terms'],
-                             {'GO:0006334': {'refs': ['PMID:21873635'],
+                             {'GO:0006334': {'refs': ['PMID:422550', 'PMID:9119399'],
                              'specific_term_name': 'nucleosome assembly'}})
         # Test relation
         # "histone H3-K27 trimethylation" is_a "histone H3-K27 methylation"
@@ -157,7 +157,6 @@ class DefaultTestCase(TransactionTestCase):
         net_dict = json.loads(sn.network)
         G = cyjs.cyjs2nx(net_dict)
         enriched = set(filter(lambda n: n.startswith('GO:'), G.nodes()))
-        for term in ['GO:0000786', 'GO:0044815', 'GO:0032993',
-                     'GO:0000790', 'GO:0000785']:
+        for term in ['GO:0000786', 'GO:0044815', 'GO:0032993', 'GO:0000785']:
             self.assertIn(term, enriched)
 

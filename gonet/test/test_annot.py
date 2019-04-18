@@ -135,7 +135,7 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         net_dict = json.loads(sn.network)
         G = cyjs.cyjs2nx(net_dict)
         self.assertListEqual(list(G.predecessors('P29376')), ['GO:0071300'])
-        self.assertListEqual(list(G.predecessors('Q5TBA9')), ['GO:0016043'])
+        self.assertListEqual(list(G.predecessors('Q5TBA9')), ['GO:0008150'])
         self.assertListEqual(list(G.predecessors('P16403')), ['GO:0065003'])
 
         # Test node GO:0071300 (cellular response to retinoic acid)

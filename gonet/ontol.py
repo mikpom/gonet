@@ -37,7 +37,7 @@ gaf_ids = {}
 id2go = {sp:defaultdict(set) for sp in ('human', 'mouse')}
 
 for sp, gaf_file in [('human', 'goa_human.gaf.gz'),
-                     ('mouse', 'gene_association.mgi.gz')]:
+                     ('mouse', 'mgi.gaf.gz')]:
     gaf_file = pkg_file(__name__, 'data/GO/'+gaf_file)
     gaf[sp] = genontol.read.goa(gaf_file, experimental=False)
     gaf_ids[sp] = set(gaf[sp].db_object_id) # Dictionary of known IDs

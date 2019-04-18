@@ -34,8 +34,9 @@ for fl, url in ontol_files.items():
 # ##
 # ## Annotation files
 # ##
+
 annot_files = {'human':'http://geneontology.org/gene-associations/goa_human.gaf.gz',
-               'mouse':'http://geneontology.org/gene-associations/gene_association.mgi.gz'}
+               'mouse':'http://current.geneontology.org/annotations/mgi.gaf.gz'}
 
 for sp, url in annot_files.items():
     print('Updating {:s} annotation file...'.format(sp))
