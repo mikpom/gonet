@@ -540,7 +540,7 @@ function colorizeNodes() {
             }
         }).value;
         var maxP = cy.nodes("[nodetype='GOterm']").max(function(n){return n.data('P');}).value;
-        var logScl = scaleLog().domain([minP, maxP]).range([0.9, 0.1]).clamp(true);
+        var logScl = scaleLog().domain([minP, maxP]).range([0.65, 0.1]).clamp(true);
         var termColorScl = scaleSequential(interpolateBuGn);
         cy.nodes("[nodetype='GOterm']").forEach(function (n) {
             stile.selector('#'+n.id().replace(':', '\\:')+':unselected').style("background-color", termColorScl(logScl(n.data('P'))));
@@ -581,11 +581,6 @@ $(document).ready(function() {
     var n;
     window.cy = cy;
     $("img#rendering-spinner").attr("src", spinnerIcon);
-    cy.on('tap', function(evt) {
-        window.tapevt = evt;
-        console.log(evt.position);
-    });
-    
     $.getJSON(netURL+'?callback=?', function (data) {
         cy.json(data);
         defaultEdges = data.elements.edges;
@@ -598,6 +593,7 @@ $(document).ready(function() {
         window.geneNodes = geneNodes;
         // Find term nodes
         termNodes = cy.nodes("[nodetype='GOterm']");
+        window.termNodes = termNodes;
         if ((analysisType=="enrich") && (termNodes.length==0)) { // there are only gene nodes
             colorizeNodes();
             addIcons();
@@ -612,7 +608,7 @@ $(document).ready(function() {
                 var thrs = createBinThresholds(pvals, 5);
                 thrs.reverse();
                 thrs.forEach(function(thr, i) {
-                    var optionHTML = '<option value='+thr.toExponential(10)+'>&#8804; '+thr.toExponential(2)+'</option>';
+                    var optionHTML = '<option value='+thr+'>&#8804; '+thr.toExponential(2)+'</option>';
                     $('#pval_threshold').append(optionHTML);
                 });
             }
@@ -784,7 +780,6 @@ $(document).ready(function() {
         cy.edges().remove();
         cy.add(defaultEdges);
         termNodes.style({display:'element'});
-
         var thr = Number($(this).val());
         var nodesToHide = termNodes.filter(function(n) {return n.data('P')>thr;});
         var edgesModified = graphutils.hideNodes(cy, nodesToHide);
