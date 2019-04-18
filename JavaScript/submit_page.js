@@ -3,30 +3,23 @@ require("expose-loader?$!jquery");
 require("expose-loader?jQuery!jquery");
 import 'bootstrap';
 
-var sampdata = ["ABCB1	0.6", "AK5	-0.54", "AMZ2P1	-0.65",
-                "APOBR	0.53", "BHLHE40	0.51", "CCDC75	0.52",
-                "CCL20	0.53", "CCR7	-0.59", "CDCA7L	-0.69",
-                "CDK11B	0.52", "CMIP	0.51", "DAB1	0.51",
-                "DENND3	0.53", "EDAR	-0.51", "EGLN3	0.52",
-                "ERF	0.53", "ESR2	0.56", "FKBP5	-0.69",
-                "FLVCR1-AS1	-0.53", "FOXP4	0.53", "FRY	0.63",
-                "GPA33	-0.77", "HAVCR2	-0.59", "HIST1H1B	0.7",
-                "HIST1H1C	0.9", "HIST1H1D	0.74", "HIST1H1E	0.85",
-                "HIST1H2AG	0.64", "HIST1H2AH	0.59", "HIST1H2AM	0.53",
-                "HIST1H2BC	0.62", "HIST2H2AC	0.79", "HIST2H2BC	0.53",
-                "IER5	0.54", "IFFO2	0.52", "JUN	0.65",
-                "KIF5C	0.6", "KIT	0.57", "LOC100130992	0.55",
-                "LOC387895	0.52", "LOC729041	0.59", "LPAR3	0.56",
-                "LPPR2	0.51", "LTC4S	0.67", "LTK	0.81",
-                "MACF1	0.5", "MARCH3	-0.6", "MMP25	0.52",
-                "MYBL1	0.53", "NOG	-0.73", "PDE7B	-0.51",
-                "PHGDH	-0.56", "PHLDA3	0.51", "PIK3IP1	-0.56",
-                "PLCB1	0.5", "PLXNA3	0.55", "PTPN13	0.67",
-                "PVRL3	0.64", "RHEBL1	0.52", "RPL19P12	0.55",
-                "SLA	-0.5", "SMAD7	0.52", "ST6GALNAC1	-0.55",
-                "SYTL2	0.56", "TMOD2	0.6", "TXK	-0.52",
-                "ZNF225	-0.51", "ZNF256	-0.51", "ZNF618	-0.55",
-                "ZNF761	-0.53"].join('\n');
+var sampdata = ["CCR4	5.38", "CCR6	5.22", "ZNRF1	2.93", "IL17RE	4.75",
+                "IL1R1	5.22", "HLF	3.64", "CNTNAP1	4.26", "TANC1	4.19",
+                "COL5A1	4.45", "RORC	4.17", "SLC35G1	2.12", "PTPN13	4.20",
+                "ZC2HC1A	2.69", "NTRK2	4.56", "ADAM12	4.34", "HRH4	4.25",
+                "FNBP1L	2.24", "AIRE	4.05", "ELOVL4	3.55", "MGLL	3.32",
+                "MYO7A	3.57", "SEMA5A	3.66", "CHDH	3.92", "CTSH	3.08",
+                "LINGO4	3.69", "SLC22A3	3.74", "MATN2	3.69", "IL17RB	3.85",
+                "FRY	2.46", "ANK1	2.69", "COL5A3	3.49", "MCAM	2.58",
+                "SEMA3G	3.08", "RNF182	3.48", "LAMA2	2.33", "NR1D1	2.28",
+                "NXN	2.84", "HSD11B1	2.98", "CASR	3.26", 
+                "CC2D2A	2.79", "MCF2L2	2.01", "TRIQK	2.60", "ZNF462	2.72",
+                "IL9R	2.65", "FAM124B	2.50", "IL2	2.53", "FANK1	2.64",
+                "PLD1	2.93", "FSBP	2.18", "LTK	2.85", "SEPT10	2.12",
+                "PANK1	2.13", "C15orf53	2.08", "PPARG	2.79", "IL23R	2.68",
+                "MAPK10	2.66", "HACD1	2.11", "NMU	2.59", "L1CAM	2.35",
+                "IL17A	2.62", "FAM189A2	2.58", "IRAK3	2.17", "CRISPLD2	2.15",
+                "DMD	2.33", "HOMER3	2.13", "CAVIN1	2.29"].join('\n');
 
 function updateAnalysisType() {
     var analysisType = $("#analysis_type input").filter(function(i, e){return $(e).prop("checked");}).val();

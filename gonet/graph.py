@@ -61,7 +61,8 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
                     slimterms.append(O.get_term(term))
             uniprot_id, ensembl_id, mgi_id, symbol, desc, identified, val, primname = gene_data.loc[node, \
                  ['uniprot_id', 'ensembl_id', 'mgi_id', 'submit_name', 'desc', 'identified', 'val', 'primname']]
-            if gene_data.loc[node, 'gn_in_swp'] > 1 or gene_data.loc[node, 'syn_in_swp'] > 1:
+            if gene_data.loc[node, 'gn_in_swp'] > 1 or \
+               (gene_data.loc[node, 'gn_in_swp']==0 and gene_data.loc[node, 'syn_in_swp']>1):
                 ambiguous = True
             else:
                 ambiguous = False
