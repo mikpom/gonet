@@ -76,7 +76,12 @@ class GeneNamesResolutionTest(TransactionTestCase):
                 continue
             self.assertEqual(res.loc[tup.Uniprot_ID, 'MGI_ID'], tup.MGI_ID)
 
-
-
-
-        
+    def test_resolution_error(self):
+        # H7C0C1 throwing an error
+        input_lines = 'H7C0C1'
+        req = dict(job_req, **{'paste_data':input_lines})
+        URL = urls.reverse('GOnet-submit-form')
+        resp = c.post(URL, req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+        res_d = sn.parsed_data['submit_name'].to_dict()
+        self.assertDictEqual(res_d, {'H7C0C1': 'H7C0C1'})

@@ -32,6 +32,7 @@ function updateAnalysisType() {
         enrichEleIds.forEach(function(eleId) {
             $("#"+eleId).removeAttr("disabled");
         });
+        $("#id_namespace").removeAttr("disabled");
     }
     else if (analysisType == "annot") {
         enrichEleIds.forEach(function(eleId) {
@@ -40,6 +41,9 @@ function updateAnalysisType() {
         annotEleIds.forEach(function(eleId) {
             $("#"+eleId).removeAttr("disabled");
         });
+        if ($("#id_slim").val()== "custom") {
+            $("#id_namespace").attr("disabled", "");
+        }
     }
     return analysisType;
 }

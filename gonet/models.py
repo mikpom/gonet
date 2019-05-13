@@ -27,6 +27,7 @@ class GOnetJobStatus(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     rdy = models.BooleanField(default=True)
     err = JSONField()
+    msg = models.TextField(1000, default='')
 
 class GOnetSubmission(models.Model):
     sep_choices = (('\t', '{tab}'), (',', '{,}'), ('\s+', 'Any whitespace'))
@@ -122,6 +123,14 @@ class GOnetSubmission(models.Model):
 
     @thread_func
     def run_pre_analysis(self):
+        def _convert_val(v):
+            if v:
+                try:
+                    return np.float_(v)
+                except ValueError:
+                    return np.nan
+            else:
+                return np.nan  
         
         jobid=str(self.id)
         log.info('Starting pre analysis...', extra={'jobid':jobid})
@@ -149,11 +158,11 @@ class GOnetSubmission(models.Model):
             # Read using Pandas
             stream.seek(0)
             colnames = ['submit_name', 'val']
-            convert_val = lambda v: np.float_(v) if v else np.nan
+            
             self.parsed_data = pd.read_csv(stream, sep=self.csv_separator,
                                            names=colnames,
                                            converters={'submit_name':np.str_,
-                                                       'val': convert_val})
+                                                       'val': _convert_val})
 
             # Check size of the input
             if (len(self.parsed_data)>20000):
@@ -223,6 +232,7 @@ class GOnetSubmission(models.Model):
             tb = traceback.format_tb(err.__traceback__)
             job_status.err[err.__class__.__name__] = tb
             job_status.rdy = True
+            job_status.msg = str(err.args[0]) if len(err.args)>0 else ''
             job_status.save()
             self.save()
             return
@@ -234,9 +244,12 @@ class GOnetSubmission(models.Model):
                 tb = traceback.format_tb(err.__traceback__)
                 job_status.err[err.__class__.__name__] = tb
                 job_status.rdy = True
+                job_status.msg = str(err.args[0]) if len(err.args)>0 else ''
                 job_status.save()
                 self.save()
-                log.error('Unhandeled exception during pre_analysis\n'+str(tb),
+                log.error('Unhandeled exception during pre_analysis\n'\
+                          +str(job_status.msg)+': '\
+                          +str(tb),
                           extra={'jobid':jobid})
                 return
 

@@ -200,7 +200,7 @@ def resolve_geneid(geneid, sp):
     # If we have primary ID then look for other IDs
     if ret['identified']:
         ret['ensembl_id'] = _get_ensembl_ids(prim_id, sp=sp)
-        ret['primname'] = id2primname[sp][prim_id]
+        ret['primname'] = id2primname[sp].get(prim_id, prim_id)
         if sp=='mouse':
             if not ret['uniprot_id']:
                 try:
@@ -208,10 +208,10 @@ def resolve_geneid(geneid, sp):
                 except KeyError:
                     ret['uniprot_id'] = None
             ret['mgi_id'] = prim_id
-            ret['desc'] = id2desc[sp][ret['mgi_id']]
+            ret['desc'] = id2desc[sp].get(ret['mgi_id'], 'NA')
         else:
             ret['uniprot_id'] = prim_id
-            ret['desc'] = id2desc[sp][ret['uniprot_id']]
+            ret['desc'] = id2desc[sp].get(ret['uniprot_id'], 'NA')
     return ret
 
 @celery_app.task

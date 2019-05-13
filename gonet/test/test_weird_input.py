@@ -122,3 +122,13 @@ class WeirdInputTestCase(TransactionTestCase):
         resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'Error occured while validating')
+
+    def test_alt_namebraces(self):
+        input_str = '\n'.join(['PYGM 2', 'profilin 2(PFN2) 2', 'KPNB1 2'])
+        req = dict(job_req, **{'paste_data':input_str, 'csv_separator':'\s+',
+                               'analysis_type':'annot', 'slim':'goslim_generic'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+        row = sn.parsed_data[sn.parsed_data.submit_name=='profilin'].iloc[0]
+        self.assertTrue(pd.isna(row['val']))
+        
