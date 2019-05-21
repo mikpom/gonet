@@ -1,0 +1,25 @@
+{% extends "gonet/base.html" %}
+{% load static %}
+
+{% block page_header %}
+    <nav class="navbar header navbar-expand-sm">
+        <a class="navbar-brand" id="navbar-logo" href="https://tools.dice-database.org/">
+            <img src="{% static 'figs/tools_shrunk.svg' %}" class="d-inline-block align-top" alt="" height="30">
+            Tools
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav navbar-right">
+                <a href="{% url 'GOnet-submit-form' %}">
+                    <img class="float-right mx-4" src="{% static 'figs/GOnet_logo.png' %}" alt="GOnet-logo" height="50px" />
+                </a>
+                <a href="https://dice-database.org" class="nav-item nav-link">DICEDB</a>
+                <a href="{% url 'doc-part' 'index' %}" class="nav-item nav-link">Help</a>
+                <a href="{% url 'doc-part' 'contact' %}" class="nav-item nav-link">Contact/Citation</a>
+            </div>
+        </div>
+    </nav>
+{% endblock %}

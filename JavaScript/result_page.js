@@ -18,7 +18,6 @@ var uniprotIcon = require("../static/figs/uniprot_favicon.png");
 var ensemblIcon = require("../static/figs/ensembl_favicon.png");
 var diceIcon = require("../static/figs/dice_favicon.png");
 var genecardsIcon = require("../static/figs/genecards_favicon.png");
-var spinnerIcon = require("../static/figs/spinner.gif");
 
 var cy;
 var currentGeneColorScale;
@@ -39,6 +38,8 @@ var aspects = {biological_process:'P',
 var aspectPriority = {biological_process:0,
                       molecular_function:1,
                       cellular_component:2};
+
+var exprColorRequested = 0;
 
 var cytoscapeStyle = [ {
     "selector" : "node",
@@ -592,7 +593,6 @@ $(document).ready(function() {
     var cMenuInstance = cy.contextMenus(contextMenuOptions);
     var n;
     window.cy = cy;
-    $("img#rendering-spinner").attr("src", spinnerIcon);
     $.getJSON(netURL+'?callback=?', function (data) {
         cy.json(data);
         defaultEdges = data.elements.edges;
@@ -737,7 +737,7 @@ $(document).ready(function() {
 
     $("#renderNet").one('click', function(evt, target){
         $("#renderNet").attr("disabled", true);
-        $("#rendering-spinner").show();
+        $("#rendering-spinner-boot").css("visibility", "visible");
         $("#renderNet").html("Computing...");
         $("#renderNetCy").hide();
         // $("#layout-selection label").each(function(){$(this).removeClass("active");});
@@ -767,8 +767,17 @@ $(document).ready(function() {
     });
     
     $("#celltype").change(function() {
+        exprColorRequested += 1;
+        var curExprColorRequested = exprColorRequested;
+        if (exprColorRequested>1) {
+            $("#expr-spinner-boot").css("visibility", "visible");
+        }
         var colorOpt = $(this).val();
-        colorGenesBy(colorOpt);
+        colorGenesBy(colorOpt, function(){
+            if (curExprColorRequested==exprColorRequested) {
+                $("#expr-spinner-boot").css("visibility", "hidden");
+            }
+        });
         if (colorOpt != "default") {
             $("#celltypeTable").html("["+$("#celltype option:selected").text()+"]");
             var e = cy.nodes('[name="'+currentSelectedGene+'"]').data('expr:'+celltype);

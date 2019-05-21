@@ -100,8 +100,11 @@
                 </div>
             {% endif %}
             <div class="card my-2">
-                <div class="card-body p-0"> 
-                    <h5 class="px-2">Color genes by expression<a target="_blank" rel="noopener noreferrer" class="mx-1" href="{% url 'doc-part' 'node_colors' %}#color-genes-help">?</a></h5> 
+                <div class="card-body p-0">
+                    <span class="mx-2">
+                        Color genes by expression<a target="_blank" rel="noopener noreferrer" class="mx-1" href="{% url 'doc-part' 'node_colors' %}#color-genes-help">?</a>
+                    </span>
+                    <span id="expr-spinner-boot" class="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true" style="visibility:hidden"></span>
                     <select id="celltype" class="form-control">
                         <option value="default">Default</option>
                         <option value="user_supplied">User supplied</option>
@@ -228,10 +231,9 @@
                         <p>Press <b>'Show network'</b> to proceed and view the network.</p>
                     </div>
                     <div class="modal-footer">
-                        <img id="rendering-spinner" src="" style="display:none;">
                         <button id="renderNet" type="button" class="btn btn-secondary">
-                            <!-- <span id="rendering-spinner-boot" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> -->
-                            Show network
+                            <span id="rendering-spinner-boot" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="visibility:hidden"></span>
+                            <span class="mr-3">Show network</span>
                         </button>
                         <div class="btn-group my-2">
                             <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export data</button>
@@ -263,6 +265,7 @@
                         <p>You may also try <span class="font-weight-bold">"Annotation"</span> analysis. See <a href="{% url 'doc-part' 'analysis_types'%}">here</a> for more information.</p>
                     </div>
                     <div class="modal-footer">
+
                         <div class="btn-group my-2">
                             <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export data</button>
                             <div class="dropdown-menu">

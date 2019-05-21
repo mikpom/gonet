@@ -1,13 +1,8 @@
-{% extends "gonet/base.html" %}
-
-{% block page_header %}
-    <div class="py-4">
-        <h2>Errors encountered while parsing the data</h2>
-    </div>
-{% endblock %}
+{% extends "gonet/dice_header.html" %}
 
 {% block content %}
     <div class="container-fluid my-4">
+        <h2>Errors encountered while parsing the data</h2>
         <p class="my-3">{{ error }}</p>
         <p class="my-3">See <a href="{% url "doc-part" "input" %}">Input</a> for an example.</p>
         <div class="w-25 px-4" id="input-example">

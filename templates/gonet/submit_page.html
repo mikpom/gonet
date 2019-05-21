@@ -1,22 +1,7 @@
-{% extends "gonet/base.html" %}
+{% extends "gonet/dice_header.html" %}
 {% load static %}
 
 {% block title %} GOnet {% endblock %}
-{% block page_header %}
-    <div class="row align-items-center">
-        <div class="col-2">
-            <a href="{% url 'GOnet-submit-form' %}">
-                <img src="{% static 'figs/GOnet_logo.png' %}" class="img-fluid m-2">
-            </a>
-        </div>
-        <div class="col-10">
-            <span class="h3">
-                Analyze gene signature in relation to GO terms and gene expression
-            </span>
-        </div>
-    </div>
-
-{% endblock %}
 
 {% block head_block %}
     <link rel="stylesheet" href="{% static "css/submit.css" %}">
@@ -135,7 +120,7 @@
                             <a class="mtop-3" href="{% url 'doc-part' 'index' %}">Help</a>
                         </span>
                         <span class="mx-4">
-                            <a href="{% url 'doc-part' 'contact' %}">Contact & Citation</a>
+                            <a href="{% url 'doc-part' 'contact' %}">Contact/Citation</a>
                         </span>
                     </td>
                 </tr>

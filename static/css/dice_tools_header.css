@@ -1,0 +1,73 @@
+:root{
+    --card-colors: darkorange;
+    --logo-bg-color: #444444;
+    --logo-width: 250px;
+    --card-text-color: #03505d;
+}
+
+nav{
+    text-align: center;
+    background-color: deepskyblue;
+    border-bottom: white solid 1px;
+}
+.navbar{
+    padding: 0 0;
+    min-height: 50px;
+}
+
+/*
+.navbar .navbar-right{
+    position: absolute;
+    left: var(--logo-width);
+}
+*/
+
+nav ul{
+    padding: 10px;
+    margin: 0 0 0 0;
+
+}
+
+nav a{
+    color: white;
+}
+
+nav a:hover{
+    color: black;
+    font-weight: 700;
+}
+
+nav #navbar-logo{
+    min-height: 50px;
+    padding: 10px;
+    width: var(--logo-width);
+    background-color: var(--logo-bg-color);
+}
+
+nav #navbar-logo::after{
+    background-color: var(--logo-bg-color);
+
+    position: absolute;
+    left: var(--logo-width);
+      content: "";
+      width: 20px;
+      height: 100%;
+      clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    padding: none;
+    margin: none;
+    transform: rotateY(180deg);
+    top: 0;
+}
+
+.header{
+    background: linear-gradient(to right, #00a4ca, #007bc3);
+    margin: 0 0 0 0;
+    color: white;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+}
+
+.header a{
+    color: white;
+}
+
+

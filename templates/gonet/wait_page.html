@@ -1,4 +1,4 @@
-{% extends "gonet/base.html" %}
+{% extends "gonet/dice_header.html" %}
 {% load static %}
 
 {% block title %}GOnet running{% endblock %}
@@ -9,14 +9,9 @@
     <script src="{% static "JavaScript/bundles/GOnet_wait_page.bundle.js" %}"></script>
 {% endblock %}
 
-{% block page_header %}
-    <div class="py-4">
-        <h2>Your job is being computed</h2>
-    </div>
-{% endblock %}
-
 {% block content %}
     <div class="container-fluid my-4">
+        <h2>Your job is being computed</h2>
         <p>You can wait on this page or check status of your job later by visiting this link</p>
         <p id="progress-url"></p>
     </div>
