@@ -1,7 +1,7 @@
 import networkx as nx
 import pandas as pd
 from .clry import celery_app
-from .ontol import O, slimterms
+from .ontol import O, get_slim
 
 
 def _pprint_successors(ret, format_func, G, node, indent=1):
@@ -16,7 +16,7 @@ def annot_txt(dfjs, slim, namespace, organism, terms=None, jobid=None):
     if slim=='custom':
         terms = list(pd.read_json(terms)['termid'])
     else:
-        terms = slimterms(slim, namespace)
+        terms = get_slim(slim, namespace)
     def _format_term(t, indent):
         tname = O.get_attr(t, 'name')
         termgenes = []
@@ -134,7 +134,7 @@ def annot_csv(dfjs, slim, namespace, organism, terms=None, jobid=None):
     if slim=='custom':
         terms = list(pd.read_json(terms)['termid'])
     else:
-        terms = slimterms(slim, namespace)
+        terms = get_slim(slim, namespace)
     smry = get_summary_df(df, terms, organism)
     smry.sort_values('NofGenes', ascending=False, inplace=True)
     smry['asc_N'] = list(range(1, len(smry)+1))

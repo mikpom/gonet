@@ -92,6 +92,15 @@ class GOnetAnnotTestCase(TransactionTestCase):
         sn = GOnetSubmission.objects.latest('submit_time')
         G = cyjs.cyjs2nx(json.loads(sn.network))
         self.assertTrue(G.has_edge('GO:0005886', 'P32248')) # CCR7 in plasma membrane
+
+        #print(G.nodes())
+        self.assertEqual(len(G.node['O60282']['data']['slimterms']), 6)
+
+        ids = list(filter(lambda n: G.node[n]['data']['nodesymbol']=='ZNF761', G.nodes()))
+        self.assertEqual(len(ids), 1)
+        znf_node = G.node[ids[0]]
+        print(znf_node)
+        self.assertEqual(znf_node['data']['slimterms'], [])
         
     def test_GO_annotate_genelist8_large(self):
         

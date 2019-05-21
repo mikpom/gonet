@@ -138,7 +138,7 @@ def get_domain_subgraph(O, domain):
     subgraph = O.G.subgraph(nodes)
     return subgraph
 
-def slimterms(slimname, domain):
+def get_slim(slimname, domain):
     if slimname=='goslim_immunol':
         slimterms = goslim_immunol
     elif slimname == 'goslim_generic':

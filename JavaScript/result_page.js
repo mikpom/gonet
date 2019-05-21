@@ -32,6 +32,14 @@ var tapEvent;
 var imgContent;
 var defaultEdges;
 
+var aspects = {biological_process:'P',
+               molecular_function:'F',
+               cellular_component:'C'};
+
+var aspectPriority = {biological_process:0,
+                      molecular_function:1,
+                      cellular_component:2};
+
 var cytoscapeStyle = [ {
     "selector" : "node",
     "css" : {
@@ -280,22 +288,26 @@ function populateGeneInfo(geneId) {
         $('#infoGeneExpr').html(ndata["expr:"+$("#celltype").val()].toFixed(2));
     }
     var allTermsTable = "";
-    ndata.allterms.forEach(function(term) {
-        allTermsTable += "<tr><td>"
-            +goTermRefTemplate.replace("%TERMID", term.termid).replace("%LINKTEXT", term.termid)
-            +"</td><td>"+term.termname+"</td></tr>";
-    });
+    if (ndata.allterms.length > 0) {
+        ndata.allterms
+             .sort(function(t1, t2) {return aspectPriority[t1.namespace]-aspectPriority[t2.namespace];})
+             .forEach(function(term) {
+                 var termref = goTermRefTemplate.replace("%TERMID", term.termid).replace("%LINKTEXT", term.termid);
+                 allTermsTable += `<tr><td>${termref}</td><td>(${aspects[term.namespace]}) ${term.termname}</td></tr>`;
+        });
+    }
+    else {allTermsTable += "<tr><td></td><td></td></tr>";}
     $('#infoAllAnnotations').html(allTermsTable);
     if (analysisType=="annot") {
         var slimTermsTable = "";
-        if (ndata.slimterms != null) {
+        if (ndata.slimterms.length > 0) {
             ndata.slimterms.forEach(function(term) {
-                slimTermsTable += "<tr><td>"
-                    +goTermRefTemplate.replace("%TERMID", term.termid).replace("%LINKTEXT", term.termid)
-                    +"</td><td>"+term.termname+"</td></tr>";
+                var termref = goTermRefTemplate.replace("%TERMID", term.termid).replace("%LINKTEXT", term.termid);
+                slimTermsTable += `<tr><td>${termref}</td><td>(${aspects[term.namespace]}) ${term.termname}</td></tr>`;
             });
-            $('#infoSlimmedAnnotations').html(slimTermsTable);
         }
+        else {slimTermsTable += "<tr><td></td><td></td></tr>";}
+        $('#infoSlimmedAnnotations').html(slimTermsTable);
     }
 }
 
@@ -784,5 +796,14 @@ $(document).ready(function() {
         var nodesToHide = termNodes.filter(function(n) {return n.data('P')>thr;});
         var edgesModified = graphutils.hideNodes(cy, nodesToHide);
     });
-    
+
+    $("#nodeNamingSelector").change(function(evt){
+        var naming = $("input[name='nodeNaming']:checked").val();
+        if (naming=="pref_symbols") {
+            cy.style().selector("node[nodetype='gene']").style("label", "data(primname)").update();
+        }
+        else if (naming=="as_input") {
+            cy.style().selector("node[nodetype='gene']").style("label", "data(nodesymbol)").update();
+        };
+    });
 });

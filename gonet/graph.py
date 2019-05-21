@@ -6,9 +6,13 @@ import pandas as pd
 from . import ontol
 from . import cyjs
 from .ontol import O, gaf, get_domain_subgraph, gene2allterms, \
-    slimterms, id2go
+    get_slim, id2go
 from .geneid import _dtypes
 from gonet.clry import celery_app
+
+priority = {'biological_process':0,
+            'molecular_function':1,
+            'cellular_component':2}
 
 def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enrich_res_df=None):
     pvals = {}
@@ -46,17 +50,19 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
             })
             
         else: #Node is a gene
-            try: 
-                _annots = sorted(filter(lambda t: O.get_attr(t, 'namespace')==namespace,
-                                           id2go[sp][node]))
+            try:
+                if namespace=='all':
+                    _annots = id2go[sp][node]
+                else:
+                    _annots = filter(lambda t: O.get_attr(t, 'namespace')==namespace,
+                                            id2go[sp][node])
             except KeyError:
                 _annots = []
             allterms = [O.get_term(annot) for annot in _annots]
-            slimterms = None
+            slimterms = []
             # dealing with annotation task if
             # gene2slimters was provided
             if not gene2slimterms is None:
-                slimterms=[]
                 for term in gene2slimterms[node]:
                     slimterms.append(O.get_term(term))
             uniprot_id, ensembl_id, mgi_id, symbol, desc, identified, val, primname = gene_data.loc[node, \
@@ -77,9 +83,10 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
                     "expr:user_supplied" : val,
                     "identified" : bool(identified),
                     "ambiguous" : ambiguous,
-                    "allterms" :  [{"termid":t.id, "termname":t.name} for t in allterms ],
-                    "slimterms" : [{"termid":t.id, "termname":t.name} for t in slimterms] \
-                                  if slimterms else None,
+                    "allterms" :  [{"termid":t.id, "termname":t.name, "namespace":t.namespace} \
+                                   for t in allterms ],
+                    "slimterms" : [{"termid":t.id, "termname":t.name, "namespace":t.namespace} \
+                                   for t in slimterms],
                     "uniprot_id" : uniprot_id,
                     "ensembl_id" : ensembl_id,
                     "mgi_id" : mgi_id
@@ -174,9 +181,10 @@ def build_slim_GOnet(parsed_data, slim, namespace, sp='human', jobid=None):
     # Don't consider duplicates
     parsed_data = parsed_data[parsed_data['duplicate_of']=='']
     if isinstance(slim, str):
-        terms = slimterms(slim, namespace)
+        terms = get_slim(slim, namespace)
         Gr = get_domain_subgraph(O, namespace).reverse(copy=False)
     elif isinstance(slim, list):
+        namespace='all'
         terms = slim
         Gr = O.G.reverse(copy=False)
     # will create new nodes

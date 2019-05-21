@@ -40,7 +40,7 @@
             <div id="colorbar"></div>
             <div id="net-view-control" class="card">
                 <div class="card-body p-0"> 
-                    <h5 id="chooseLyt" class="card-title">Choose layout</h5>
+                    <h5 id="chooseLyt" class="px-2">Choose layout</h5>
                     <form class="btn-group btn-group-toggle d-block" data-toggle="buttons" id="layout-selection" title="Compound Spring Embedder layout (Imitates node repulsion)" data-placement="top" data-toggle="tooltip">
                         <label class="btn btn-outline-primary layout-btn active" id="coseLayout">
                             <input type="radio" name="options" id="option1" autocomplete="off" checked> Cose
@@ -77,10 +77,23 @@
                     <div class="dropdown-item exportCYJS">Network as JSON</div>
                 </div>
             </div>
+            <div class="card">
+                <div id="nodeNamingSelector" class="card-body p-0">
+                    <h5 class="px-2">Node names</h5>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="nodeNaming" value="pref_symbols">
+                        <label class="form-check-label" for="inlineRadio1">Preferred symbols</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="nodeNaming"  value="as_input" checked="">
+                        <label class="form-check-label" for="inlineRadio2">Submitted</label>
+                    </div>
+                </div>
+            </div>
             {% if analysis_type == "enrich" %}
                 <div class="card my-2">
                     <div class="card-body p-0"> 
-                        <h5 class="card-title">p-value threshold</h5> 
+                        <h5 class="px-2">p-value threshold</h5> 
                         <select id="pval_threshold" class="form-control">
                         </select>
                     </div>
@@ -88,7 +101,7 @@
             {% endif %}
             <div class="card my-2">
                 <div class="card-body p-0"> 
-                    <h5 class="card-title">Color genes by expression<a target="_blank" rel="noopener noreferrer" class="mx-1" href="{% url 'doc-part' 'node_colors' %}#color-genes-help">?</a></h5> 
+                    <h5 class="px-2">Color genes by expression<a target="_blank" rel="noopener noreferrer" class="mx-1" href="{% url 'doc-part' 'node_colors' %}#color-genes-help">?</a></h5> 
                     <select id="celltype" class="form-control">
                         <option value="default">Default</option>
                         <option value="user_supplied">User supplied</option>
@@ -179,11 +192,11 @@
                 
                 <br>
                 {% if analysis_type == "annot" %}
-                    <h3>Annotations in slim</h3>
-                    <table id="infoSlimmedAnnotations" class="table table-sm table-bordered table-hover"></table>
+                    <h5>Annotations in slim</h5>
+                    <table id="infoSlimmedAnnotations" class="table table-sm table-bordered table-hover goterm-table"></table>
                 {% endif %}
                 <h5>All annotations</h5>
-                <table id="infoAllAnnotations" class="table table-sm table-bordered table-hover"></table>
+                <table id="infoAllAnnotations" class="table table-sm table-bordered table-hover goterm-table"></table>
             </div>
             <div id="edgeinfo" style="display:none;">
                 <table class="table table-bordered table-hover table-sm">
@@ -216,7 +229,10 @@
                     </div>
                     <div class="modal-footer">
                         <img id="rendering-spinner" src="" style="display:none;">
-                        <button id="renderNet" type="button" class="btn btn-secondary">Show network</button>
+                        <button id="renderNet" type="button" class="btn btn-secondary">
+                            <!-- <span id="rendering-spinner-boot" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> -->
+                            Show network
+                        </button>
                         <div class="btn-group my-2">
                             <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export data</button>
                             <div class="dropdown-menu">

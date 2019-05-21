@@ -16,6 +16,10 @@
     font-size: 0.8em;
 }
 
+.goterm-table {
+    font-size:x-small;
+}
+
 #cy {
     position: absolute;
     left: 0;
