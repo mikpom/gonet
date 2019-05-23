@@ -160,3 +160,9 @@ class DefaultTestCase(TransactionTestCase):
         for term in ['GO:0000786', 'GO:0044815', 'GO:0032993', 'GO:0000785']:
             self.assertIn(term, enriched)
 
+    def test_genelist12(self):
+        input_lines = open(pkg_file(__name__, 'data/genelist12.lst'), 'r').read()
+        req = dict(job_req, **{'paste_data':input_lines})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        sn = GOnetSubmission.objects.latest('submit_time')
+        self.assertGreater(sn.enrich_res_df.shape[0], 1)
