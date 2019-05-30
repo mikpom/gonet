@@ -56,8 +56,8 @@
                 </div> 
             </div>
             <div class="btn-group btn-block" role="group" aria-label="Basic example" id="remove-nodes-btns">
-                <button type="button" class="btn btn-outline-primary rm-nodes-btn" id="rm_parent_nodes">Remove parent terms</button>
-                <button type="button" class="btn btn-outline-primary rm-nodes-btn" id="rm_gene_nodes">Remove genes</button>
+                <button type="button" class="btn btn-outline-primary rm-nodes-btn px-1" id="rm_parent_nodes">Hide gene-unconnected terms</button>
+                <button type="button" class="btn btn-outline-primary rm-nodes-btn px-1" id="rm_gene_nodes">Hide genes</button>
             </div>
             <button id="renderNetCy" type="button" class="btn btn-secondary mx-auto my-auto" style="display:none;">Show network</button>
             <div class="btn-group my-2">
@@ -93,7 +93,7 @@
             {% if analysis_type == "enrich" %}
                 <div class="card my-2">
                     <div class="card-body p-0"> 
-                        <h5 class="px-2">p-value threshold</h5> 
+                        <h5 class="px-2">p-value threshold <span id="pval-spinner" class="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true" style="visibility:hidden"></span></h5>
                         <select id="pval_threshold" class="form-control">
                         </select>
                     </div>

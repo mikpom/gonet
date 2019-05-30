@@ -1,6 +1,13 @@
 #remove-nodes-btns .rm-nodes-btn {
-    width: 50%;
     font-size: 0.7rem;
+}
+
+#rm_parent_nodes {
+    width: 60%;
+}
+
+#rm_gene_nodes {
+    width: 40%;
 }
 
 #job-warnings {

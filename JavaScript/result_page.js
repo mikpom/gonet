@@ -386,13 +386,13 @@ function side_panel(cy) {
 
 function showParentNodes() {
     parentNodes.style({display:'element'});
-    $("#rm_parent_nodes").html("Remove GO parents");
+    $("#rm_parent_nodes").html("Hide gene-unconnected terms");
     parentsRemoved = false;
 }
 
 function hideParentNodes() {
     parentNodes.style({display:'none'});
-    $("#rm_parent_nodes").html("Show GO parents");
+    $("#rm_parent_nodes").html("Show gene-unconnected terms");
     parentsRemoved = true;
 }
 
@@ -410,13 +410,13 @@ function toggleShowGeneNodes() {
     if (geneNodesRemoved) {
         geneNodes.style({display:'element'});
         $("#colorbar").show();
-        btn.html("Remove gene nodes");
+        btn.html("Hide genes");
         geneNodesRemoved = false;
     }
     else {
         geneNodes.style({display:'none'});
         $("#colorbar").hide();
-        btn.html("Show gene nodes");
+        btn.html("Show genes");
         geneNodesRemoved = true;
     }
 }
@@ -602,10 +602,8 @@ $(document).ready(function() {
         // Find gene nodes and their edges
         geneNodes = cy.nodes("[nodetype='gene']");
         geneNodes = geneNodes.add(geneNodes.connectedEdges());
-        window.geneNodes = geneNodes;
         // Find term nodes
         termNodes = cy.nodes("[nodetype='GOterm']");
-        window.termNodes = termNodes;
         if ((analysisType=="enrich") && (termNodes.length==0)) { // there are only gene nodes
             colorizeNodes();
             addIcons();
@@ -638,7 +636,7 @@ $(document).ready(function() {
             }
             else {
                 $("#nofGenes").html(nofGenes.toString());
-                $("#nofGenesTotal").html(geneNodes.length.toString());
+                $("#nofGenesTotal").html(geneNodes.nodes().length.toString());
                 $("#nofTerms").html(nofTerms.toString());
                 $("#nofTermsTotal").html(termNodes.length.toString());
                 if ((nofTerms>manyNodesThreshold) && (nofGenes>manyNodesThreshold)) {
@@ -796,14 +794,21 @@ $(document).ready(function() {
     $("#celltype").trigger("change");
     
     $("#pval_threshold").change(function() {
-        // Returning to default state
-        showParentNodes();
-        cy.edges().remove();
-        cy.add(defaultEdges);
-        termNodes.style({display:'element'});
         var thr = Number($(this).val());
-        var nodesToHide = termNodes.filter(function(n) {return n.data('P')>thr;});
-        var edgesModified = graphutils.hideNodes(cy, nodesToHide);
+        $("#pval-spinner").css("visibility", "visible");
+        setTimeout(function(){
+            // Returning to default state first
+            showParentNodes();
+            cy.edges().remove();
+            cy.add(defaultEdges);
+        
+            // Now hiding what is necessary
+            termNodes.style({display:'element'});
+            
+            var nodesToHide = termNodes.filter(function(n) {return n.data('P')>thr;});
+            var edgesModified = graphutils.hideNodes(cy, nodesToHide);
+            $("#pval-spinner").css("visibility", "hidden");
+        }, 50);
     });
 
     $("#nodeNamingSelector").change(function(evt){
