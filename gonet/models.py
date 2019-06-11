@@ -149,6 +149,9 @@ class GOnetSubmission(models.Model):
                 stream = io.StringIO(self.paste_data)
                 first_line = stream.readline().strip('\r\n')
 
+            if first_line == '':
+                raise DataNotProvidedError('Uploaded file is empty')
+
             # Check for multiple separators
             if len(re.split(self.csv_separator, first_line))>2:
                 log.info('Got multiple separators on the first line. ',
@@ -232,7 +235,7 @@ class GOnetSubmission(models.Model):
             tb = traceback.format_tb(err.__traceback__)
             job_status.err[err.__class__.__name__] = tb
             job_status.rdy = True
-            job_status.msg = str(err.args[0]) if len(err.args)>0 else ''
+            job_status.msg = ';'.join(map(str, err.args)) if len(err.args)>0 else ''
             job_status.save()
             self.save()
             return
@@ -244,10 +247,11 @@ class GOnetSubmission(models.Model):
                 tb = traceback.format_tb(err.__traceback__)
                 job_status.err[err.__class__.__name__] = tb
                 job_status.rdy = True
-                job_status.msg = str(err.args[0]) if len(err.args)>0 else ''
+                job_status.msg = ';'.join(map(str, err.args)) if len(err.args)>0 else ''
                 job_status.save()
                 self.save()
                 log.error('Unhandeled exception during pre_analysis\n'\
+                          +err.__class__.__name__+': '\
                           +str(job_status.msg)+': '\
                           +str(tb),
                           extra={'jobid':jobid})

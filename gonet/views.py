@@ -51,6 +51,10 @@ def check_analysis_progress(request, jobid):
                       +'Check input format.'
                 return render(request, 'gonet/err/input_errors_page.html',
                               {'error': msg})
+            elif 'DataNotProvidedError' in job_err:
+                msg = job_status.msg
+                return render(request, 'gonet/err/input_errors_page.html',
+                              {'error': msg})
             elif 'TooManyEntriesGraphError' in job_err:
                 msg = 'Lists with more than 3000 entries are '\
                       +'incompatible with output type "Graph". You may'\

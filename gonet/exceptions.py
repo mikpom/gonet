@@ -1,7 +1,7 @@
-class DataNotProvidedError(Exception):
+class InputValidationError(Exception):
     pass
 
-class InputValidationError(Exception):
+class DataNotProvidedError(InputValidationError):
     pass
 
 class TooManySeparatorsError(InputValidationError):
