@@ -51,12 +51,12 @@ def add_net_data(G, gene_data, namespace, sp='human', gene2slimterms=None, enric
             
         else: #Node is a gene
             try:
-                if namespace=='all':
-                    _annots = id2go[sp][node]
-                else:
+                if namespace in priority:
                     _annots = filter(lambda t: O.has_term(t) \
                                          and O.get_attr(t, 'namespace')==namespace,
                                      id2go[sp][node])
+                else:
+                    _annots = filter(lambda t: O.has_term(t), id2go[sp][node])
                 allterms = [O.get_term(annot) for annot in _annots]
             except KeyError:
                 _annots = []

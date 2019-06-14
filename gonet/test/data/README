@@ -11,5 +11,6 @@ genelist10- Binary input example
 genelist11- genes upregulated in Th17 compared to Th1 (logFC>2)
 genelist12- contained genes with obsolete annotations (as of May 2019)
 genelist13- empty text file for uploading
+genelist14- mouse gene list that gave GOTermNotFoundError
 custom_annoation - result of dfs_tree on ontol.O and two terms: GO:0071300 (cellular response to retinoic acid) and GO:0065003 (macromolecular complex assembly)
 

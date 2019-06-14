@@ -200,3 +200,11 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         self.assertContains(resp, 'Some of the custom terms provided were not found')
         self.assertContains(resp, 'GO:1234567')
 
+    def test_GO_annotate_genelist14(self):
+        input_lines = open(pkg_file(__name__, 'data/genelist14.tsv'), 'r').read()
+        custom_annotation = open(pkg_file(__name__, 'data/custom_annotation2.txt'), 'r').read()
+        req = dict(job_req, **{'paste_data':input_lines, 'analysis_type':'annot',
+                               'slim':'custom', 'custom_terms':custom_annotation,
+                               'organism':'mouse'})
+        resp = c.post(urls.reverse('GOnet-submit-form'), req, follow=True)
+        
