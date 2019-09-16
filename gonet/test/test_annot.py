@@ -93,12 +93,14 @@ class GOnetAnnotTestCase(TransactionTestCase):
         G = cyjs.cyjs2nx(json.loads(sn.network))
         self.assertTrue(G.has_edge('GO:0005886', 'P32248')) # CCR7 in plasma membrane
 
-        self.assertEqual(len(G.node['O60282']['data']['slimterms']), 6)
+        
+        self.assertEqual(len(G.node['O60282']['data']['slimterms']), 7)
 
         ids = list(filter(lambda n: G.node[n]['data']['nodesymbol']=='ZNF761', G.nodes()))
         self.assertEqual(len(ids), 1)
         znf_node = G.node[ids[0]]
-        self.assertEqual(znf_node['data']['slimterms'], [])
+        self.assertEqual(len(znf_node['data']['slimterms']), 4)
+        
         
     def test_GO_annotate_genelist8_large(self):
         
@@ -142,7 +144,7 @@ class GOnetAnnotCustomAnnotationTestCase(TransactionTestCase):
         net_dict = json.loads(sn.network)
         G = cyjs.cyjs2nx(net_dict)
         self.assertListEqual(list(G.predecessors('P29376')), ['GO:0071300'])
-        self.assertListEqual(list(G.predecessors('Q5TBA9')), ['GO:0008150'])
+        self.assertListEqual(list(G.predecessors('Q5TBA9')), ['GO:0016043'])
         self.assertListEqual(list(G.predecessors('P16403')), ['GO:0065003'])
 
         # Test node GO:0071300 (cellular response to retinoic acid)

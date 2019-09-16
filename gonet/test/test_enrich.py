@@ -49,7 +49,8 @@ class DefaultTestCase(TransactionTestCase):
         e = list(filter(lambda e: e['data']['name']==t_edge_name,
                            net_dict['elements']['edges']))[0]
         self.assertDictEqual(e['data']['specific_terms'],
-                             {'GO:0006334': {'refs': ['PMID:422550', 'PMID:9119399'],
+                             {'GO:0006334': {'refs': ['PMID:21873635',
+                                                      'PMID:422550', 'PMID:9119399'],
                              'specific_term_name': 'nucleosome assembly'}})
         # Test relation
         # "histone H3-K27 trimethylation" is_a "histone H3-K27 methylation"
