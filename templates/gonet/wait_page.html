@@ -10,12 +10,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid my-4">
+    <div id="wait-container" class="container my-4">
         <h2>Your job is being computed</h2>
         <p>You can wait on this page or check status of your job later by visiting this link</p>
         <p id="progress-url"></p>
-    </div>
-    <div class="container-fluid my-4">
         <span id="loading-badge" class="badge badge-warning" style="display:none;">Loading</span>
     </div>
 {% endblock %}

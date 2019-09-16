@@ -23,3 +23,15 @@
         </div>
     </nav>
 {% endblock %}
+
+{% block page_footer %}
+    <div class="container">
+        <footer class="my-5 py-3 border-top">
+            <ul class="list-unstyled float-right">
+                <li class="text-muted">Ontology version: {{ ontology_ver }}</li>
+                <li class="text-muted">Human annotation version: {{ human_ver }}</li>
+                <li class="text-muted">Mouse annotation version: {{ mouse_ver }}</li>
+            </ul>
+        </footer>
+    </div>
+{% endblock %}

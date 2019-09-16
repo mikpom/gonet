@@ -1,6 +1,7 @@
 import json
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
+from django.conf import settings
 import logging
 from .forms import GOnetSubmitForm
 from .models import GOnetSubmission, GOnetJobStatus
@@ -11,9 +12,14 @@ import numpy as np
 
 log = logging.getLogger(__name__)
 
+vers = {'ontology_ver':settings.ONTOLOGY_VERSION,
+        'human_ver':settings.ANNOTATION_VERSION['human'],
+        'mouse_ver':settings.ANNOTATION_VERSION['mouse']}
+
 def job_submission(request, *args, **kwargs):
     if request.method=='GET':
-        return render(request, 'gonet/submit_page.html', {'form': GOnetSubmitForm()})
+        vars = dict(vers, **{'form': GOnetSubmitForm()})
+        return render(request, 'gonet/submit_page.html', vars)
     elif request.method=='POST':
         form = GOnetSubmitForm(request.POST)
         if form.is_valid():
@@ -89,8 +95,9 @@ def check_analysis_progress(request, jobid):
                 return render(request, 'gonet/err/exception_caught.html',
                               {'jobid': jobid})
     else:
-        return render(request, 'gonet/wait_page.html', 
-                     {'status_url' : urls.reverse('GOnet-job-status', args=(jobid,))})
+        vars = dict(vers, **{'status_url' :
+                             urls.reverse('GOnet-job-status', args=(jobid,))})
+        return render(request, 'gonet/wait_page.html', vars)
 
 def job_status(request, jobid):
     job_status = GOnetJobStatus.objects.get(pk=jobid)

@@ -23,6 +23,14 @@
     font-size: 0.8em;
 }
 
+footer {
+    font-size: small
+}
+
+#wait-container {
+    min-height: 500px
+}
+
 .goterm-table {
     font-size:x-small;
 }

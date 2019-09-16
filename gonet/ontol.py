@@ -1,4 +1,5 @@
 from pkg_resources import resource_filename as pkg_file
+from django.conf import settings
 from collections import defaultdict
 import uuid
 import pandas as pd
@@ -36,9 +37,8 @@ gaf_ids = {}
 # structure is sp -> ID -> {set of GO terms}
 id2go = {sp:defaultdict(set) for sp in ('human', 'mouse')}
 
-for sp, gaf_file in [('human', 'goa_human.gaf.gz'),
-                     ('mouse', 'mgi.gaf.gz')]:
-    gaf_file = pkg_file(__name__, 'data/GO/'+gaf_file)
+for sp in ('human', 'mouse'):
+    gaf_file = settings.ANNOTATION_FILE[sp]
     gaf[sp] = genontol.read.goa(gaf_file, experimental=False)
     gaf_ids[sp] = set(gaf[sp].db_object_id) # Dictionary of known IDs
     gaf[sp].set_index(['db_object_id', 'go_id'], drop=False, inplace=True)
@@ -47,7 +47,7 @@ for sp, gaf_file in [('human', 'goa_human.gaf.gz'),
 annotated = {sp:set(df.db_object_id) for sp, df in gaf.items()}
 
 # graph is directed from  specific term to less specific !!
-O = GOntology.from_obo(pkg_file(__name__, 'data/GO/go-basic.obo.gz'))
+O = GOntology.from_obo(settings.ONTOLOGY_FILE)
 bg = {'human':defaultdict(set), 'mouse':defaultdict(set)}
 specific_terms = {'human':defaultdict(set), 'mouse':defaultdict(set)}
 for sp in ('human', 'mouse'):
