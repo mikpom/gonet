@@ -1,7 +1,7 @@
 #from io import BytesIO
 from django.db import models
 import pandas as pd
-from pandas.compat import StringIO
+from io import StringIO
 import json
 
 class DataFrameField(models.Field):
