@@ -5,7 +5,7 @@
 {% block content %}
     <div class="container my-4">
         {% block doc_content %}{% endblock %}
-        <footer class="pt-4 my-md-5 pt-md-5 border-top">
+        <footer class="pt-4 my-5  border-top">
             <p>
                 <span class="mx-4">
                     <a href="{% url 'doc-part' 'index' %}">Index</a>
@@ -17,3 +17,5 @@
         </footer>
     </div>
 {% endblock %}
+
+{% block page_footer %}{% endblock %}
